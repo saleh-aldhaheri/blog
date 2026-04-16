@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'public'),
 
     /*
     |--------------------------------------------------------------------------
@@ -33,7 +33,10 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Must stay false unless this disk uses a dedicated `url` path. When true, Laravel
+            // registers GET /storage/{path} for this disk; unsigned requests 403 because the disk
+            // is non-public — that breaks Spatie/public disk URLs like /storage/{id}/file.jpg.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -56,6 +59,7 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
             'throw' => false,
             'report' => false,
         ],

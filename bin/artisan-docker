@@ -1,4 +1,0 @@
-#!/bin/sh
-# Run Artisan inside the app container (DB_HOST=mysql only works there).
-cd "$(dirname "$0")/.." || exit 1
-exec docker compose exec app php artisan "$@"
