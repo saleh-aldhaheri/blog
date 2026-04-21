@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\RoleEnum;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +17,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
- // ->use(RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -47,4 +49,19 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * @param  RoleEnum  $role  By default the user will be created as user role
+ */
+function CreateUserAs(RoleEnum $role): User
+{
+    $user = User::factory()->create();
+
+    if ($role !== RoleEnum::USER) {
+        $user->role = $role->value;
+        $user->save();
+    }
+
+    return $user;
 }
