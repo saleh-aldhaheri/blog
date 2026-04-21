@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Database\State\EnsureAdminSeeded;
+use Database\State\EnsureCategoriesSeeded;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -18,6 +19,7 @@ class EnsureDatabaseSeeded extends Command
     {
         collect([
             new EnsureAdminSeeded(),
+            new EnsureCategoriesSeeded()
         ])->each->__invoke();
 
         $this->components->info('Database state ensured.');
