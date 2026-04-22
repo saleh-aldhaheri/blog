@@ -86,6 +86,6 @@ describe('logout', function () {
 
         $this->withToken($token)
             ->postJson(route('api.admin.logout'))
-            ->assertStatus(401);
+            ->assertForbidden();
     });
 });

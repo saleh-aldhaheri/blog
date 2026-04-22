@@ -51,9 +51,8 @@ function something()
     // ..
 }
 
-
 /**
- * @param  RoleEnum $role By default the user will be created as user role
+ * @param  RoleEnum  $role  By default the user will be created as user role
  */
 function CreateUserAs(RoleEnum $role): User
 {

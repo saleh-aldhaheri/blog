@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ApiResponse
 {
-    public function success(mixed $data = [], string $message, int $code): JsonResponse
+    public function success(mixed $data, string $message, int $code): JsonResponse
     {
         if ($data instanceof JsonResource || $data instanceof ResourceCollection) {
             $data = $data->resolve();
@@ -16,7 +16,7 @@ class ApiResponse
 
         return response()->json([
             'message' => $message,
-            'data' => $data
+            'data' => $data,
         ], $code);
     }
 
@@ -24,7 +24,7 @@ class ApiResponse
     {
         return response()->json([
             'message' => $message,
-            'errors' =>  $errors
+            'errors' => $errors,
         ], $code);
     }
 }

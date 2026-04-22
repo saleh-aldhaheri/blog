@@ -13,7 +13,6 @@ use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-
 class AuthController extends BaseController
 {
     public function login(Request $request): JsonResponse

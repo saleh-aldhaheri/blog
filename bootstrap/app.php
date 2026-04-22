@@ -7,16 +7,18 @@ use App\Support\ApiResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
             Route::prefix('api/v1')
                 ->as('api.')
+                ->middleware([SubstituteBindings::class])
                 ->group(function () {
                     Route::prefix('admin')
                         ->middleware(['auth:sanctum', AdminMiddleware::class])
@@ -34,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (BusinessException $e) {
-            return  new ApiResponse()->error(
+            return new ApiResponse()->error(
                 $e->getMessage(),
                 $e->getCode(),
                 $e->errors()

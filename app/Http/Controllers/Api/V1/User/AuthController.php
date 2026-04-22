@@ -41,7 +41,7 @@ class AuthController extends BaseController
 
         return $this->apiResponse->success([
             'token' => $token->plainTextToken,
-            'user' => $user
+            'user' => $user,
         ], 'Login successful', 200);
     }
 

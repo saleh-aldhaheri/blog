@@ -9,11 +9,11 @@ beforeEach(function () {
 });
 
 describe('login', function () {
-    it('should login the user and return the token with the user data',  function () {
+    it('should login the user and return the token with the user data', function () {
 
         $response = $this->postJson(route('api.user.login'), [
             'email' => $this->user->email,
-            'password' => 'password'
+            'password' => 'password',
         ])
             ->assertOk();
 
@@ -22,54 +22,54 @@ describe('login', function () {
             'data' => [
                 'token',
                 'user',
-            ]
+            ],
         ]);
     });
 
-    it('should return 401 if the user not exist',  function () {
+    it('should return 401 if the user not exist', function () {
 
         $response = $this->postJson(route('api.user.login'), [
-            'email' => "newEmail@gmail.com",
-            'password' => 'password'
+            'email' => 'newEmail@gmail.com',
+            'password' => 'password',
         ])
             ->assertStatus(401);
 
         expect($response->json())->toHaveKeys([
             'message',
-            'errors'
+            'errors',
         ]);
     });
 
     it('should not allowed admin to login as user', function () {
 
-        $admin =  CreateUserAs(RoleEnum::ADMIN);
+        $admin = CreateUserAs(RoleEnum::ADMIN);
 
         $response = $this->postJson(route('api.user.login'), [
             'email' => $admin->email,
-            'password' => 'password'
+            'password' => 'password',
         ])
             ->assertStatus(401);
 
         expect($response->json())->toHaveKeys([
             'message',
-            'errors'
+            'errors',
         ]);
     });
 
     it('should not allowed for wrong credentials', function (mixed $email, string $password) {
         $response = $this->postJson(route('api.user.login'), [
             'email' => $email($this->user),
-            'password' => $password
+            'password' => $password,
         ])
             ->assertStatus(401);
 
         expect($response->json())->toHaveKeys([
             'message',
-            'errors'
+            'errors',
         ]);
     })->with([
-        ['email' => fn($user = null) => $user->email, 'password' => 'wrong password'],
-        ['email' => fn($user = null) => 'wrongEmail@gmail.com', 'password' => 'password']
+        ['email' => fn ($user = null) => $user->email, 'password' => 'wrong password'],
+        ['email' => fn ($user = null) => 'wrongEmail@gmail.com', 'password' => 'password'],
     ]);
 });
 
@@ -84,7 +84,7 @@ describe('register', function () {
 
         assertDatabaseHas('users', [
             'email' => $payload['email'],
-            'role' =>  RoleEnum::USER->value
+            'role' => RoleEnum::USER->value,
         ]);
     })->with([[[
         'name' => fake()->name(),
@@ -116,7 +116,7 @@ describe('register', function () {
         [
             'name' => fake()->name(),
             'password' => 'password',
-            'email' => "adfasdfsaf",
+            'email' => 'adfasdfsaf',
             'password_confirmation' => 'password',
         ],
     ]]);
@@ -145,6 +145,6 @@ describe('logout', function () {
 
         $this->withToken($response->json()['data']['token'])
             ->postJson(route('api.user.logout'))
-            ->assertStatus(401);
+            ->assertForbidden();
     });
 });

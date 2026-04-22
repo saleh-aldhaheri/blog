@@ -18,8 +18,8 @@ class EnsureDatabaseSeeded extends Command
     public function handle(): int
     {
         collect([
-            new EnsureAdminSeeded(),
-            new EnsureCategoriesSeeded()
+            new EnsureAdminSeeded,
+            new EnsureCategoriesSeeded,
         ])->each->__invoke();
 
         $this->components->info('Database state ensured.');
