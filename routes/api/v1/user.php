@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\User\AuthController;
+use App\Http\Controllers\Api\V1\User\CommentController;
 use App\Http\Controllers\Api\V1\User\PostController;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -17,15 +18,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/users/{user}/posts', [PostController::class, 'userPosts'])->name('user.posts');
 
 Route::apiResource('/posts', PostController::class)
-    ->middlewareFor(
-        'update',
-        'can:update,post',
-    )
-    ->middlewareFor(
-        'show',
-        'can:view,post'
-    )
-    ->middlewareFor(
-        'delete',
-        'can:delete,post'
-    );
+    ->middlewareFor('update', 'can:update,post')
+    ->middlewareFor('show', 'can:view,post')
+    ->middlewareFor('destroy', 'can:delete,post');
+
+Route::apiResource('posts.comments', CommentController::class)
+    ->shallow()
+    ->except('show')
+    ->scoped()
+    ->middlewareFor('update', 'can:update,comment')
+    ->middlewareFor('destroy', 'can:delete,comment');
