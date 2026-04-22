@@ -19,7 +19,7 @@ class PostService
             ->with('category:id,name')
             ->when(
                 auth()->id() !== $user->id,
-                fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
+                fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )
             ->search($search)
             ->orderBy('created_at')
@@ -113,7 +113,7 @@ class PostService
 
                 $existingMediaIds
                     ->diff($incomingMediaIds)
-                    ->each(fn($id) => Media::findOrFail($id)->delete());
+                    ->each(fn ($id) => Media::findOrFail($id)->delete());
 
                 $contentArray = [];
 
