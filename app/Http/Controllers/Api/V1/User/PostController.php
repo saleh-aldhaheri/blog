@@ -50,9 +50,25 @@ class PostController extends BaseController
         );
     }
 
+    public function viewedPosts(Request $request): JsonResponse
+    {
+        $search = $this->getSearch($request);
+        $limit = $this->getLimit($request);
+
+        $posts = $this->postService->getViewedPosts($search, $limit);
+
+        return $this->apiResponse->success(
+            data: $posts,
+            message: '',
+            code: 200
+        );
+    }
+
     public function show(Post $post): JsonResponse
     {
         $post = $this->postService->showPost($post);
+
+        $this->postService->markAsViewed($post);
 
         return $this->apiResponse->success(
             data: $post,

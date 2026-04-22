@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Data\PostData;
 use App\Data\UpdatePostData;
+use App\Enums\InteractionTypeEnum;
 use App\Enums\PostStatusEnum;
 use App\Models\Post;
 use App\Models\User;
@@ -17,6 +18,10 @@ class PostService
     {
         return $user->posts()
             ->with('category:id,name')
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])
             ->when(
                 auth()->id() !== $user->id,
                 fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
@@ -32,6 +37,10 @@ class PostService
         return Post::query()
             ->search($search)
             ->with(['category:id,name', 'user:id,name'])
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->orderBy('created_at')
             ->orderBy('id')
@@ -40,7 +49,18 @@ class PostService
 
     public function showPost(Post $post): Post
     {
-        return $post->load(['category:id,name', 'user:id,name']);
+        $post->load(['category:id,name', 'user:id,name']);
+
+        $post->loadCount(array_merge(
+            ['comments'],
+            InteractionTypeEnum::actionsInteractionsCounts(),
+        ));
+
+        $post->load([
+            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+        ]);
+
+        return $post;
     }
 
     public function storePost(PostData $postData)
@@ -165,5 +185,31 @@ class PostService
         $post->clearMediaCollection('post-thumbnails');
         $post->clearMediaCollection('post-content');
         $post->delete();
+    }
+
+    public function markAsViewed(Post $post): void
+    {
+        if (!auth()->user()->can('markAsViewed', $post)) {
+            return; //ignore quietly
+        }
+
+        auth()->user()->viewedPosts()->syncWithoutDetaching($post->id);
+    }
+
+    public function getViewedPosts(?string $search = '', int $limit = 10): CursorPaginator
+    {
+        return auth()
+            ->user()
+            ->viewedPosts()
+            ->with('category:id,name')
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])
+            ->where('status', PostStatusEnum::PUBLISHED->value)
+            ->search($search)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->cursorPaginate($limit);
     }
 }

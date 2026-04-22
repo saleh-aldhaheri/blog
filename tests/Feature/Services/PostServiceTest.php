@@ -6,6 +6,7 @@ use App\Data\PostData;
 use App\Data\UpdatePostContentData;
 use App\Data\UpdatePostData;
 use App\Enums\PostStatusEnum;
+use App\Enums\RoleEnum;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\User;
@@ -94,6 +95,8 @@ describe('getUserPosts', function () {
 
 describe('getPosts', function () {
     it('returns only published posts with category and user loaded', function () {
+        $this->actingAs(User::factory()->create());
+
         Post::factory(3)->create([
             'status' => PostStatusEnum::PUBLISHED->value,
         ]);
@@ -113,6 +116,8 @@ describe('getPosts', function () {
     });
 
     it('respects the limit argument', function () {
+        $this->actingAs(User::factory()->create());
+
         Post::factory(10)->create([
             'status' => PostStatusEnum::PUBLISHED->value,
         ]);
@@ -125,6 +130,8 @@ describe('getPosts', function () {
 
 describe('showPost', function () {
     it('loads category and user relations on the post', function () {
+        $this->actingAs(User::factory()->create());
+
         $post = Post::factory()->create([
             'status' => PostStatusEnum::PUBLISHED->value,
         ]);
@@ -497,5 +504,150 @@ describe('update', function () {
         expect($updated->content[0]['media']['id'])->toBe($mediaId)
             ->and($updated->content[0]['media']['url'])->toBe($mediaUrl)
             ->and(Media::query()->whereKey($mediaId)->exists())->toBeTrue();
+    });
+});
+
+
+describe('markAsViewed', function () {
+    it('should mark post as viewed', function () {
+        $owner = CreateUserAs(RoleEnum::USER);
+        $post  = Post::factory(1)->create([
+            'user_id' => $owner->id
+        ])
+            ->first();
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $viewedPosts = $user->viewedPosts;
+
+        expect($viewedPosts->count())->toBe(0);
+
+        $this->postService->markAsViewed($post);
+
+        $viewedPosts = $user->refresh()->viewedPosts;
+
+        expect($viewedPosts->count())->toBe(1)
+            ->and($viewedPosts->first()->id)->toBe($post->id);
+    });
+
+    it('should gracefully refuse to mark the posts as viewed is the user is the author', function () {
+
+        $user = User::factory()->create();
+
+        $post  = Post::factory(1)->create([
+            'user_id' => $user->id
+        ])
+            ->first();
+
+        $this->actingAs($user);
+
+        $viewedPosts = $user->viewedPosts;
+
+        expect($viewedPosts->count())->toBe(0);
+
+        $this->postService->markAsViewed($post);
+
+        $viewedPosts = $user->refresh()->viewedPosts;
+
+        expect($viewedPosts->count())->toBe(0);
+    });
+});
+
+describe('getViewedPosts', function () {
+    it('returns an empty page when the user has not viewed any posts', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Post::factory(3)->create([
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+
+        $result = $this->postService->getViewedPosts();
+
+        expect($result->items())->toHaveCount(0);
+    });
+
+    it('returns only published posts the user has viewed', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $viewedPublished = Post::factory()->create([
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+        $viewedDraft = Post::factory()->create([
+            'status' => PostStatusEnum::DRAFT->value,
+        ]);
+        $notViewed = Post::factory()->create([
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+
+        $user->viewedPosts()->syncWithoutDetaching([
+            $viewedPublished->id,
+            $viewedDraft->id,
+        ]);
+
+        $result = $this->postService->getViewedPosts();
+
+        expect($result->items())->toHaveCount(1)
+            ->and($result->first()->id)->toBe($viewedPublished->id);
+    });
+
+    it('filters viewed posts by title search', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $needle = 'UniqueViewedTitle '.uniqid();
+
+        $matching = Post::factory()->create([
+            'title' => $needle,
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+        $other = Post::factory()->create([
+            'title' => 'Something else entirely',
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+
+        $user->viewedPosts()->syncWithoutDetaching([
+            $matching->id,
+            $other->id,
+        ]);
+
+        $result = $this->postService->getViewedPosts(search: $needle);
+
+        expect($result->items())->toHaveCount(1)
+            ->and($result->first()->id)->toBe($matching->id);
+    });
+
+    it('respects the limit argument', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $posts = Post::factory(10)->create([
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+
+        $user->viewedPosts()->syncWithoutDetaching($posts->pluck('id')->all());
+
+        $result = $this->postService->getViewedPosts(limit: 4);
+
+        expect($result->items())->toHaveCount(4);
+    });
+
+    it('eager loads category on viewed posts', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $post = Post::factory()->create([
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+        $user->viewedPosts()->syncWithoutDetaching($post->id);
+
+        $result = $this->postService->getViewedPosts();
+        $item = $result->first();
+
+        expect($item->relationLoaded('category'))->toBeTrue()
+            ->and($item->category)->not->toBeNull();
     });
 });

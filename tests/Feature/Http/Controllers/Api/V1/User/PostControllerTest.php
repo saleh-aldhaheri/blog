@@ -344,3 +344,93 @@ describe('post update - DTO validation', function () {
         ])->assertForbidden();
     });
 });
+
+
+describe('get viewed posts', function () {
+    it('returns 401 when the request is unauthenticated', function () {
+        auth()->logout();
+
+        $this->getJson(route('api.user.posts.viewed'))
+            ->assertUnauthorized();
+    });
+
+    it('returns 200 with an empty list when the user has not viewed any posts', function () {
+        Post::factory(5)->create([
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+
+        $response = $this->getJson(route('api.user.posts.viewed'))
+            ->assertOk();
+
+        expect($response->json()['data']['data'])->toHaveCount(0);
+    });
+
+    it('returns 200 with only published posts the user has viewed', function () {
+        $user = auth()->user();
+
+        $viewedPublished = Post::factory()->create([
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+        $viewedDraft = Post::factory()->create([
+            'status' => PostStatusEnum::DRAFT,
+        ]);
+        Post::factory()->create([
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+
+        $user->viewedPosts()->syncWithoutDetaching([
+            $viewedPublished->id,
+            $viewedDraft->id,
+        ]);
+
+        $response = $this->getJson(route('api.user.posts.viewed'))
+            ->assertOk();
+
+        $items = $response->json()['data']['data'];
+
+        expect($items)->toHaveCount(1)
+            ->and($items[0]['id'])->toBe($viewedPublished->id)
+            ->and(collect($items)->pluck('status'))
+            ->not->toContain(PostStatusEnum::DRAFT->value);
+    });
+
+    it('returns 200 and filters by search when the query matches a viewed post title', function () {
+        $user = auth()->user();
+        $needle = 'ViewedSearchTitle '.uniqid();
+
+        $matching = Post::factory()->create([
+            'title' => $needle,
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+        $other = Post::factory()->create([
+            'title' => 'Other title not matching search',
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+
+        $user->viewedPosts()->syncWithoutDetaching([
+            $matching->id,
+            $other->id,
+        ]);
+
+        $response = $this->getJson(route('api.user.posts.viewed', ['search' => $needle]))
+            ->assertOk();
+
+        expect($response->json()['data']['data'])->toHaveCount(1)
+            ->and($response->json()['data']['data'][0]['title'])->toBe($needle);
+    });
+
+    it('returns 200 and respects the limit query parameter', function () {
+        $user = auth()->user();
+
+        $posts = Post::factory(10)->create([
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+
+        $user->viewedPosts()->syncWithoutDetaching($posts->pluck('id')->all());
+
+        $response = $this->getJson(route('api.user.posts.viewed', ['limit' => 4]))
+            ->assertOk();
+
+        expect($response->json()['data']['data'])->toHaveCount(4);
+    });
+});
