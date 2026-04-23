@@ -5,11 +5,13 @@ namespace App\Enums;
 enum BusinessExceptionsEnums
 {
     case AUTH;
+    case INVALID;
 
     public function status(): int
     {
         return match ($this) {
             self::AUTH => 401,
+            self::INVALID => 422,
         };
     }
 
@@ -17,6 +19,7 @@ enum BusinessExceptionsEnums
     {
         return match ($this) {
             self::AUTH => 'unauthenticated',
+            self::INVALID => 'invalid_request',
         };
     }
 }
