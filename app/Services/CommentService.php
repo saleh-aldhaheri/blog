@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\InteractionTypeEnum;
 use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Pagination\CursorPaginator;
@@ -13,6 +14,10 @@ class CommentService
         return $post
             ->comments()
             ->with(['user:id,name'])
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])
             ->search($search)
             ->orderBy('created_at')
             ->orderBy('id')
@@ -27,7 +32,7 @@ class CommentService
             'post_id' => $post->id,
         ]);
 
-        return $comment->load('user:id,name');
+        return $this->withInteractionPresentation($comment->load('user:id,name'));
     }
 
     public function updateComment(Comment $comment, string $content): Comment
@@ -35,7 +40,18 @@ class CommentService
         $comment->content = $content;
         $comment->save();
 
-        return $comment->load('user:id,name');
+        return $this->withInteractionPresentation($comment->load('user:id,name'));
+    }
+
+    private function withInteractionPresentation(Comment $comment): Comment
+    {
+        $comment->loadCount(InteractionTypeEnum::actionsInteractionsCounts());
+
+        $comment->load([
+            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+        ]);
+
+        return $comment;
     }
 
     public function delete(Comment $comment): void

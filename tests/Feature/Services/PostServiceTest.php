@@ -94,6 +94,8 @@ describe('getUserPosts', function () {
 
 describe('getPosts', function () {
     it('returns only published posts with category and user loaded', function () {
+        $this->actingAs(User::factory()->create());
+
         Post::factory(3)->create([
             'status' => PostStatusEnum::PUBLISHED->value,
         ]);
@@ -113,6 +115,8 @@ describe('getPosts', function () {
     });
 
     it('respects the limit argument', function () {
+        $this->actingAs(User::factory()->create());
+
         Post::factory(10)->create([
             'status' => PostStatusEnum::PUBLISHED->value,
         ]);
@@ -125,6 +129,8 @@ describe('getPosts', function () {
 
 describe('showPost', function () {
     it('loads category and user relations on the post', function () {
+        $this->actingAs(User::factory()->create());
+
         $post = Post::factory()->create([
             'status' => PostStatusEnum::PUBLISHED->value,
         ]);

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Api\V1\User\AuthController;
 use App\Http\Controllers\Api\V1\User\CommentController;
+use App\Http\Controllers\Api\V1\User\CommentInteractionController;
 use App\Http\Controllers\Api\V1\User\PostController;
+use App\Http\Controllers\Api\V1\User\PostInteractionController;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -28,3 +30,13 @@ Route::apiResource('posts.comments', CommentController::class)
     ->scoped()
     ->middlewareFor('update', 'can:update,comment')
     ->middlewareFor('destroy', 'can:delete,comment');
+
+Route::apiResource('posts.interactions', PostInteractionController::class)
+    ->middlewareFor('destroy', 'can:delete,interaction')
+    ->scoped()
+    ->except('index', 'show', 'update');
+
+Route::apiResource('comments.interactions', CommentInteractionController::class)
+    ->middlewareFor('destroy', 'can:delete,interaction')
+    ->scoped()
+    ->except('index', 'show', 'update');
