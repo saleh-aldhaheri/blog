@@ -18,6 +18,25 @@ class FollowController extends BaseController
         parent::__construct($apiResponse);
     }
 
+    /**
+     * List accounts I follow
+     *
+     * Cursor-paginated users the current user follows.
+     *
+     * @group v1 /user
+     *
+     * @subgroup Follow
+     *
+     * @queryParam limit int optional Page size. Example: 10
+     *
+     * @response 200 scenario=success {
+     *   "message": "",
+     *   "data": {
+     *     "data": [{"id": 2, "name": "Bob"}],
+     *     "per_page": 10
+     *   }
+     * }
+     */
     public function followings(Request $request)
     {
         $limit = $this->getLimit($request);
@@ -31,6 +50,23 @@ class FollowController extends BaseController
         );
     }
 
+    /**
+     * List my followers
+     *
+     * @group v1 /user
+     *
+     * @subgroup Follow
+     *
+     * @queryParam limit int optional Page size. Example: 10
+     *
+     * @response 200 scenario=success {
+     *   "message": "",
+     *   "data": {
+     *     "data": [],
+     *     "per_page": 10
+     *   }
+     * }
+     */
     public function followers(Request $request)
     {
         $limit = $this->getLimit($request);
@@ -44,6 +80,24 @@ class FollowController extends BaseController
         );
     }
 
+    /**
+     * Follow a user
+     *
+     * @group v1 /user
+     *
+     * @subgroup Follow
+     *
+     * @urlParam user integer required User ID to follow. Example: 2
+     *
+     * @response 201 scenario=success {
+     *   "message": "",
+     *   "data": ""
+     * }
+     * @response 422 scenario="cannot follow yourself" {
+     *   "message": "Cannot follow yourself",
+     *   "errors": []
+     * }
+     */
     public function follow(User $user): JsonResponse
     {
         $this->followService->follow($user);
@@ -55,6 +109,20 @@ class FollowController extends BaseController
         );
     }
 
+    /**
+     * Unfollow a user
+     *
+     * @group v1 /user
+     *
+     * @subgroup Follow
+     *
+     * @urlParam user integer required User ID to unfollow. Example: 2
+     *
+     * @response 200 scenario=success {
+     *   "message": "",
+     *   "data": ""
+     * }
+     */
     public function unfollow(User $user): JsonResponse
     {
         $this->followService->unfollow($user);

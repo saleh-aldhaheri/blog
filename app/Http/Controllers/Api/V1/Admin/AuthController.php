@@ -15,6 +15,37 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends BaseController
 {
+    /**
+     * Login (admin)
+     *
+     * Issue a Sanctum token for an account with role `admin`.
+     *
+     * @group v1 /admin
+     *
+     * @subgroup Auth
+     *
+     * @unauthenticated
+     *
+     * @bodyParam email string required Example: admin@example.com
+     * @bodyParam password string required Min 8 characters.
+     *
+     * @response 200 scenario=success {
+     *   "message": "Login successful",
+     *   "data": {
+     *     "token": "2|abcdefghijklmnopqrstuvwxyz",
+     *     "user": {
+     *       "id": 1,
+     *       "name": "Admin",
+     *       "email": "admin@example.com",
+     *       "role": "admin"
+     *     }
+     *   }
+     * }
+     * @response 401 scenario="invalid credentials" {
+     *   "message": "unauthenticated",
+     *   "errors": []
+     * }
+     */
     public function login(Request $request): JsonResponse
     {
         $request->validate([
@@ -45,6 +76,19 @@ class AuthController extends BaseController
         ], 'Login successful', 200);
     }
 
+    /**
+     * Logout (admin)
+     *
+     * Revoke the current access token.
+     *
+     * @group v1 /admin
+     *
+     * @subgroup Auth
+     *
+     * @authenticated
+     *
+     * @response 204 scenario=success
+     */
     public function logout(Request $request): Response
     {
         $token = $request->user()->currentAccessToken();

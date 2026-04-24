@@ -16,6 +16,38 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends BaseController
 {
+    /**
+     * Login (user)
+     *
+     * Issue a Sanctum personal access token for a user account (`role` must be `user`).
+     *
+     * @group v1 /user
+     *
+     * @subgroup Auth
+     *
+     * @unauthenticated
+     *
+     * @bodyParam email string required The account email. Example: jane@example.com
+     * @bodyParam password string required Minimum 8 characters. Example: secretpass
+     *
+     * @response 200 scenario=success {
+     *   "message": "Login successful",
+     *   "data": {
+     *     "token": "1|abcdefghijklmnopqrstuvwxyz",
+     *     "user": {
+     *       "id": 1,
+     *       "name": "Jane",
+     *       "email": "jane@example.com",
+     *       "email_verified_at": "2026-01-15T12:00:00.000000Z",
+     *       "role": "user"
+     *     }
+     *   }
+     * }
+     * @response 401 scenario="invalid credentials" {
+     *   "message": "Incorrect Credentials",
+     *   "errors": []
+     * }
+     */
     public function login(Request $request): JsonResponse
     {
         $request->validate([
@@ -45,6 +77,32 @@ class AuthController extends BaseController
         ], 'Login successful', 200);
     }
 
+    /**
+     * Register (user)
+     *
+     * Create a new user with role `user`.
+     *
+     * @group v1 /user
+     *
+     * @subgroup Auth
+     *
+     * @unauthenticated
+     *
+     * @bodyParam name string required Display name (2–256 chars). Example: Jane Doe
+     * @bodyParam email string required Must be unique. Example: jane@example.com
+     * @bodyParam password string required Min 8 characters. Example: secretpass
+     * @bodyParam password_confirmation string required Must match `password`.
+     *
+     * @response 201 scenario=success {
+     *   "message": "User registered successfully",
+     *   "data": {
+     *     "id": 2,
+     *     "name": "Jane Doe",
+     *     "email": "jane@example.com",
+     *     "role": "user"
+     *   }
+     * }
+     */
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -68,6 +126,19 @@ class AuthController extends BaseController
         ], 'User registered successfully', 201);
     }
 
+    /**
+     * Logout (user)
+     *
+     * Revoke the current access token.
+     *
+     * @group v1 /user
+     *
+     * @subgroup Auth
+     *
+     * @authenticated
+     *
+     * @response 204 scenario=success
+     */
     public function logout(Request $request): Response
     {
         $token = $request->user()->currentAccessToken();
