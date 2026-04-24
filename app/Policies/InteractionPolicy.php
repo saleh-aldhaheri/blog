@@ -12,6 +12,6 @@ class InteractionPolicy
      */
     public function delete(User $user, Interaction $interaction): bool
     {
-        return $interaction->user_id ===  $user->id;
+        return $interaction->user_id === $user->id;
     }
 }

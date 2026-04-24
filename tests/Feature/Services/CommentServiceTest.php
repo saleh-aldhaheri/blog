@@ -3,20 +3,20 @@
 use App\Enums\RoleEnum;
 use App\Models\Comment;
 use App\Models\Post;
-use Illuminate\Pagination\CursorPaginator;
 use App\Services\CommentService;
+use Illuminate\Pagination\CursorPaginator;
 
 beforeEach(function () {
     $this->user = CreateUserAs(RoleEnum::USER);
     $this->actingAs($this->user);
-    $this->commentService  = new CommentService();
+    $this->commentService = new CommentService;
 });
 
 describe('getComment', function () {
     it('should get Post Comments with respecting the limit', function ($limit) {
-        $post  = Post::factory(1)->create()->first();
+        $post = Post::factory(1)->create()->first();
         Comment::factory(20)->create([
-            'post_id' => $post->id
+            'post_id' => $post->id,
         ]);
 
         $comments = $this->commentService->getComments(post: $post, limit: $limit);
@@ -27,15 +27,15 @@ describe('getComment', function () {
     })->with([10, 5, 15]);
 
     it('should search Post Comment by content', function () {
-        $post  = Post::factory(1)->create()->first();
+        $post = Post::factory(1)->create()->first();
         Comment::factory(20)->create([
-            'post_id' => $post->id
+            'post_id' => $post->id,
         ]);
 
         $content = fake()->text();
         Comment::factory(1)->create([
             'post_id' => $post->id,
-            'content' => $content
+            'content' => $content,
         ]);
 
         $comments = $this->commentService->getComments(post: $post, search: $content);
@@ -51,7 +51,7 @@ describe('storeComment', function () {
     it('should store the content', function () {
         $content = fake()->text();
         $post = Post::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ])
             ->first();
 
@@ -68,13 +68,13 @@ describe('updateComment', function () {
         $content = fake()->text();
 
         $post = Post::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ])
             ->first();
 
         $comment = Comment::factory(1)->create([
             'post_id' => $post->id,
-            'content' => 'my content'
+            'content' => 'my content',
         ])->first();
 
         $comment = $this->commentService->updateComment($comment, $content);

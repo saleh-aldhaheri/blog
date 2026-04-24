@@ -20,11 +20,11 @@ class PostService
             ->with('category:id,name')
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->when(
                 auth()->id() !== $user->id,
-                fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
+                fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )
             ->search($search)
             ->orderBy('created_at')
@@ -39,7 +39,7 @@ class PostService
             ->with(['category:id,name', 'user:id,name'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->orderBy('created_at')
@@ -57,7 +57,7 @@ class PostService
         ));
 
         $post->load([
-            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
         ]);
 
         return $post;
@@ -133,7 +133,7 @@ class PostService
 
                 $existingMediaIds
                     ->diff($incomingMediaIds)
-                    ->each(fn($id) => Media::findOrFail($id)->delete());
+                    ->each(fn ($id) => Media::findOrFail($id)->delete());
 
                 $contentArray = [];
 
@@ -189,8 +189,8 @@ class PostService
 
     public function markAsViewed(Post $post): void
     {
-        if (!auth()->user()->can('markAsViewed', $post)) {
-            return; //ignore quietly
+        if (! auth()->user()->can('markAsViewed', $post)) {
+            return; // ignore quietly
         }
 
         auth()->user()->viewedPosts()->syncWithoutDetaching($post->id);
@@ -204,7 +204,7 @@ class PostService
             ->with('category:id,name')
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->search($search)

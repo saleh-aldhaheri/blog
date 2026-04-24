@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api\V1\User;
 
 use App\Enums\InteractionTypeEnum;
 use App\Http\Controllers\Api\BaseController;
-use App\Models\Interaction;
 use App\Models\Comment;
+use App\Models\Interaction;
 use App\Services\InteractionService;
 use App\Support\ApiResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rules\Enum;
 
@@ -25,7 +25,7 @@ class CommentInteractionController extends BaseController
     public function store(Comment $comment, Request $request): JsonResponse
     {
         $request->validate([
-            'action' => ['required', new Enum(InteractionTypeEnum::class)]
+            'action' => ['required', new Enum(InteractionTypeEnum::class)],
         ]);
 
         $interaction = $this->interactionService->storeInteraction($comment, $request->action);

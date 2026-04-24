@@ -13,7 +13,7 @@ enum InteractionTypeEnum: string
     public static function actionsInteractionsCounts(string $relation = 'interactions'): array
     {
         return collect(InteractionTypeEnum::cases())->mapWithKeys(function ($action) {
-            return  ["interactions as {$action->value}_count" => fn($query) => $query->where('action', $action->value)];
+            return ["interactions as {$action->value}_count" => fn ($query) => $query->where('action', $action->value)];
         })->toArray();
     }
 }

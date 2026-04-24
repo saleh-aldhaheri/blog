@@ -8,8 +8,8 @@ use App\Models\Interaction;
 use App\Models\Post;
 use App\Services\InteractionService;
 use App\Support\ApiResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rules\Enum;
 
@@ -25,7 +25,7 @@ class PostInteractionController extends BaseController
     public function store(Post $post, Request $request): JsonResponse
     {
         $request->validate([
-            'action' => ['required', new Enum(InteractionTypeEnum::class)]
+            'action' => ['required', new Enum(InteractionTypeEnum::class)],
         ]);
 
         $interaction = $this->interactionService->storeInteraction($post, $request->action);

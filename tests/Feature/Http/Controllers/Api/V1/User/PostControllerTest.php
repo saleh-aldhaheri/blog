@@ -345,7 +345,6 @@ describe('post update - DTO validation', function () {
     });
 });
 
-
 describe('get viewed posts', function () {
     it('returns 401 when the request is unauthenticated', function () {
         auth()->logout();

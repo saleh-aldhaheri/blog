@@ -16,7 +16,7 @@ class CommentService
             ->with(['user:id,name'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->search($search)
             ->orderBy('created_at')
@@ -48,7 +48,7 @@ class CommentService
         $comment->loadCount(InteractionTypeEnum::actionsInteractionsCounts());
 
         $comment->load([
-            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
         ]);
 
         return $comment;

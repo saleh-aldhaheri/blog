@@ -11,7 +11,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
 beforeEach(function () {
-    $this->interactionService = new InteractionService();
+    $this->interactionService = new InteractionService;
 });
 
 describe('storeInteraction', function () {
@@ -66,17 +66,17 @@ describe('deleteInteraction', function () {
         $interaction = Interaction::factory(1)->create()->first();
 
         assertDatabaseHas('interactions', [
-            'user_id' =>  $interaction->user_id,
+            'user_id' => $interaction->user_id,
             'interactable_type' => $interaction->interactable_type,
-            'interactable_id' => $interaction->interactable_id
+            'interactable_id' => $interaction->interactable_id,
         ]);
 
         $this->interactionService->deleteInteraction($interaction);
 
         assertDatabaseMissing('interactions', [
-            'user_id' =>  $interaction->user_id,
+            'user_id' => $interaction->user_id,
             'interactable_type' => $interaction->interactable_type,
-            'interactable_id' => $interaction->interactable_id
+            'interactable_id' => $interaction->interactable_id,
         ]);
     });
 });

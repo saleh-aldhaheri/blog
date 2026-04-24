@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Enums\InteractionTypeEnum;
+use Database\Factories\InteractionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Interaction extends Model
 {
-    /** @use HasFactory<\Database\Factories\InteractionFactory> */
+    /** @use HasFactory<InteractionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -20,7 +21,7 @@ class Interaction extends Model
     ];
 
     protected $casts = [
-        'action' =>  InteractionTypeEnum::class
+        'action' => InteractionTypeEnum::class,
     ];
 
     public function interactable(): MorphTo

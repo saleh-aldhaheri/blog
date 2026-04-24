@@ -10,14 +10,14 @@ class InteractionService
 {
     public function storeInteraction(Model $model, string $action): Interaction
     {
-        $interaction =  Interaction::updateOrCreate(
+        $interaction = Interaction::updateOrCreate(
             [
                 'user_id' => Auth::id(),
                 'interactable_type' => get_class($model),
                 'interactable_id' => $model->id,
             ],
             [
-                'action' => $action
+                'action' => $action,
             ]
         );
 

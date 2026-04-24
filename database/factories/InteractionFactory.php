@@ -23,8 +23,8 @@ class InteractionFactory extends Factory
         return [
             'user_id' => User::factory(1)->create()->first()->id,
             'interactable_id' => Post::factory(1)->create()->first()->id,
-            'interactable_type' =>  Post::class,
-            'action' => InteractionTypeEnum::LIKE->value
+            'interactable_type' => Post::class,
+            'action' => InteractionTypeEnum::LIKE->value,
         ];
     }
 }

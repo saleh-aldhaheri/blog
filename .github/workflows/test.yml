@@ -27,12 +27,9 @@ jobs:
 
       - name: Generate app key
         run: php artisan key:generate
-        
-      - name: Run pint
-        run: ./vendor/bin/pint
-        
+
       - name: Run tests fast
         run: php artisan test --parallel
-      
+
       - name: Run coverage
         run: php artisan test --coverage

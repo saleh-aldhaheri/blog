@@ -507,12 +507,11 @@ describe('update', function () {
     });
 });
 
-
 describe('markAsViewed', function () {
     it('should mark post as viewed', function () {
         $owner = CreateUserAs(RoleEnum::USER);
-        $post  = Post::factory(1)->create([
-            'user_id' => $owner->id
+        $post = Post::factory(1)->create([
+            'user_id' => $owner->id,
         ])
             ->first();
 
@@ -536,8 +535,8 @@ describe('markAsViewed', function () {
 
         $user = User::factory()->create();
 
-        $post  = Post::factory(1)->create([
-            'user_id' => $user->id
+        $post = Post::factory(1)->create([
+            'user_id' => $user->id,
         ])
             ->first();
 

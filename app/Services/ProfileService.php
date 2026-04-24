@@ -6,7 +6,6 @@ use App\Data\UpdateProfileData;
 use App\Enums\BusinessExceptionsEnums;
 use App\Exceptions\BusinessException;
 use App\Models\User;
-use Illuminate\Validation\ValidationException;
 
 class ProfileService
 {
@@ -40,6 +39,7 @@ class ProfileService
 
         $user->save();
         $user->fresh();
+
         return $this->getProfile();
     }
 
