@@ -27,3 +27,6 @@ Thumbs.db
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+**/scribe
+.scribe

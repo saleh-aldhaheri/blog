@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\V1\Admin\AuthController;
-use App\Http\Middleware\AdminMiddleware;
+use App\Http\V1\Controllers\Api\Admin\AuthController;
+use App\Http\V1\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 
 // public routes

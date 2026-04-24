@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1\User;
+namespace App\Http\V1\Controllers\Api\User;
 
 use App\Enums\InteractionTypeEnum;
-use App\Http\Controllers\Api\BaseController;
+use App\Http\V1\Controllers\Api\BaseController;
 use App\Models\Comment;
 use App\Models\Interaction;
 use App\Services\InteractionService;
@@ -22,6 +22,30 @@ class CommentInteractionController extends BaseController
         parent::__construct($apiResponse);
     }
 
+    /**
+     * Add interaction on comment
+     *
+     * @group v1 /user
+     *
+     * @subgroup Interactions
+     *
+     * @urlParam comment integer required Comment ID. Example: 1
+     *
+     * @bodyParam action string required One of: `like`, `dislike`, `wow`, `love`, `hate`. Example: like
+     *
+     * @response 201 scenario=success {
+     *   "message": "",
+     *   "data": {
+     *     "interaction": {
+     *       "id": 2,
+     *       "action": "like",
+     *       "user_id": 1,
+     *       "interactable_type": "App\\Models\\Comment",
+     *       "interactable_id": 1
+     *     }
+     *   }
+     * }
+     */
     public function store(Comment $comment, Request $request): JsonResponse
     {
         $request->validate([
@@ -37,6 +61,18 @@ class CommentInteractionController extends BaseController
         );
     }
 
+    /**
+     * Remove interaction on comment
+     *
+     * @group v1 /user
+     *
+     * @subgroup Interactions
+     *
+     * @urlParam comment integer required Comment ID. Example: 1
+     * @urlParam interaction integer required Interaction ID. Example: 2
+     *
+     * @response 204 scenario=success
+     */
     public function destroy(Comment $comment, Interaction $interaction): Response
     {
         $this->interactionService->deleteInteraction($interaction);
