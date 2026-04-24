@@ -8,6 +8,7 @@ use Database\Factories\PostFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\HasMedia;
@@ -63,5 +64,10 @@ class Post extends Model implements HasMedia
     public function interactions(): MorphMany
     {
         return $this->morphMany(Interaction::class, 'interactable');
+    }
+
+    public function viewedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'viewed_posts');
     }
 }

@@ -20,6 +20,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/users/{user}/posts', [PostController::class, 'userPosts'])->name('user.posts');
 
+Route::get('/posts/viewed', [PostController::class, 'viewedPosts'])->name('posts.viewed');
 Route::apiResource('/posts', PostController::class)
     ->middlewareFor('update', 'can:update,post')
     ->middlewareFor('show', 'can:view,post')

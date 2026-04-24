@@ -186,4 +186,30 @@ class PostService
         $post->clearMediaCollection('post-content');
         $post->delete();
     }
+
+    public function markAsViewed(Post $post): void
+    {
+        if (!auth()->user()->can('markAsViewed', $post)) {
+            return; //ignore quietly
+        }
+
+        auth()->user()->viewedPosts()->syncWithoutDetaching($post->id);
+    }
+
+    public function getViewedPosts(?string $search = '', int $limit = 10): CursorPaginator
+    {
+        return auth()
+            ->user()
+            ->viewedPosts()
+            ->with('category:id,name')
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])
+            ->where('status', PostStatusEnum::PUBLISHED->value)
+            ->search($search)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->cursorPaginate($limit);
+    }
 }

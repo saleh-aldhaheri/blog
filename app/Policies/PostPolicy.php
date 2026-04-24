@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\PostStatusEnum;
 use App\Enums\RoleEnum;
+use App\Exceptions\BusinessException;
 use App\Models\Post;
 use App\Models\User;
 
@@ -33,5 +34,10 @@ class PostPolicy
     {
         return $user->id === $post->user_id ||
             $user->role === RoleEnum::ADMIN;
+    }
+
+    public function markAsViewed(User $user, Post $post): bool
+    {
+        return $user->id !== $post->user->id;
     }
 }
