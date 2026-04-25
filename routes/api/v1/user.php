@@ -1,13 +1,13 @@
 <?php
 
-use App\Http\Controllers\Api\V1\User\AuthController;
-use App\Http\Controllers\Api\V1\User\CommentController;
-use App\Http\Controllers\Api\V1\User\CommentInteractionController;
-use App\Http\Controllers\Api\V1\User\FollowController;
-use App\Http\Controllers\Api\V1\User\PostController;
-use App\Http\Controllers\Api\V1\User\PostInteractionController;
-use App\Http\Controllers\Api\V1\User\ProfileController;
-use App\Http\Middleware\UserMiddleware;
+use App\Http\V1\Controllers\Api\User\AuthController;
+use App\Http\V1\Controllers\Api\User\CommentController;
+use App\Http\V1\Controllers\Api\User\CommentInteractionController;
+use App\Http\V1\Controllers\Api\User\FollowController;
+use App\Http\V1\Controllers\Api\User\PostController;
+use App\Http\V1\Controllers\Api\User\PostInteractionController;
+use App\Http\V1\Controllers\Api\User\ProfileController;
+use App\Http\V1\Middleware\UserMiddleware;
 use Illuminate\Support\Facades\Route;
 
 // public routes

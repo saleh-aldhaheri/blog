@@ -59,8 +59,8 @@ describe('login', function () {
             'errors',
         ]);
     })->with([
-        ['email' => fn ($user = null) => $user->email, 'password' => 'wrong password'],
-        ['email' => fn ($user = null) => 'wrongEmail@gmail.com', 'password' => 'password'],
+        ['email' => fn($user = null) => $user->email, 'password' => 'wrong password'],
+        ['email' => fn($user = null) => 'wrongEmail@gmail.com', 'password' => 'password'],
     ]);
 });
 
