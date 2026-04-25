@@ -14,7 +14,6 @@ describe('login', function () {
         ])->assertOk();
 
         expect($response->json())->toHaveKeys([
-            'message',
             'data' => [
                 'token',
                 'user',
@@ -59,8 +58,8 @@ describe('login', function () {
             'errors',
         ]);
     })->with([
-        ['email' => fn($user = null) => $user->email, 'password' => 'wrong password'],
-        ['email' => fn($user = null) => 'wrongEmail@gmail.com', 'password' => 'password'],
+        ['email' => fn ($user = null) => $user->email, 'password' => 'wrong password'],
+        ['email' => fn ($user = null) => 'wrongEmail@gmail.com', 'password' => 'password'],
     ]);
 });
 

@@ -6,6 +6,7 @@ use App\Enums\BusinessExceptionsEnums;
 use App\Enums\RoleEnum;
 use App\Exceptions\BusinessException;
 use App\Http\V1\Controllers\Api\BaseController;
+use App\Http\V1\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,6 @@ class AuthController extends BaseController
      * @bodyParam password string required Minimum 8 characters. Example: secretpass
      *
      * @response 200 scenario=success {
-     *   "message": "Login successful",
      *   "data": {
      *     "token": "1|abcdefghijklmnopqrstuvwxyz",
      *     "user": {
@@ -46,6 +46,10 @@ class AuthController extends BaseController
      * @response 401 scenario="invalid credentials" {
      *   "message": "Incorrect Credentials",
      *   "errors": []
+     * }
+     * @response 422 scenario="validation" {
+     *   "message": "The email field is required.",
+     *   "errors": { "email": ["The email field is required."] }
      * }
      */
     public function login(Request $request): JsonResponse
@@ -71,10 +75,12 @@ class AuthController extends BaseController
             now()->plus(weeks: 1)
         );
 
-        return $this->apiResponse->success([
-            'token' => $token->plainTextToken,
-            'user' => $user,
-        ], 'Login successful', 200);
+        return response()->json([
+            'data' => [
+                'token' => $token->plainTextToken,
+                'user' => $user,
+            ],
+        ], 200);
     }
 
     /**
@@ -94,13 +100,16 @@ class AuthController extends BaseController
      * @bodyParam password_confirmation string required Must match `password`.
      *
      * @response 201 scenario=success {
-     *   "message": "User registered successfully",
      *   "data": {
      *     "id": 2,
      *     "name": "Jane Doe",
      *     "email": "jane@example.com",
      *     "role": "user"
      *   }
+     * }
+     * @response 422 scenario="validation" {
+     *   "message": "The name field is required.",
+     *   "errors": { "name": ["The name field is required."] }
      * }
      */
     public function register(Request $request): JsonResponse
@@ -118,12 +127,7 @@ class AuthController extends BaseController
             'role' => RoleEnum::USER->value,
         ]);
 
-        return $this->apiResponse->success([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-        ], 'User registered successfully', 201);
+        return new UserResource($user)->response();
     }
 
     /**

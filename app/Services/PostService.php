@@ -17,7 +17,7 @@ class PostService
     public function getUserPosts(User $user, ?string $search = '', int $limit = 10): CursorPaginator
     {
         return $user->posts()
-            ->with('category:id,name')
+            ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
@@ -36,7 +36,7 @@ class PostService
     {
         return Post::query()
             ->search($search)
-            ->with(['category:id,name', 'user:id,name'])
+            ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
@@ -49,7 +49,7 @@ class PostService
 
     public function showPost(Post $post): Post
     {
-        $post->load(['category:id,name', 'user:id,name']);
+        $post->load(['category:id,name', 'user:id,name,email,role']);
 
         $post->loadCount(array_merge(
             ['comments'],
@@ -201,7 +201,7 @@ class PostService
         return auth()
             ->user()
             ->viewedPosts()
-            ->with('category:id,name')
+            ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),

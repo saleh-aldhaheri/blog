@@ -19,10 +19,9 @@ describe('follow listings', function () {
         (new FollowService)->follow($other);
 
         $response = $this->getJson(route('api.user.follow.following'))
-            ->assertOk()
-            ->assertJsonPath('message', '');
+            ->assertOk();
 
-        $items = $response->json('data.data');
+        $items = $response->json('data');
         expect($items)->toBeArray()
             ->and($items)->not->toBeEmpty()
             ->and(collect($items)->pluck('id'))->toContain($other->id);
@@ -36,10 +35,9 @@ describe('follow listings', function () {
         Sanctum::actingAs($this->user);
 
         $response = $this->getJson(route('api.user.follow.followers'))
-            ->assertOk()
-            ->assertJsonPath('message', '');
+            ->assertOk();
 
-        $items = $response->json('data.data');
+        $items = $response->json('data');
         expect($items)->toBeArray()
             ->and($items)->not->toBeEmpty()
             ->and(collect($items)->pluck('id'))->toContain($fan->id);
@@ -55,7 +53,7 @@ describe('follow listings', function () {
         $response = $this->getJson(route('api.user.follow.following', ['limit' => 2]))
             ->assertOk();
 
-        expect($response->json('data.data'))->toHaveCount(2);
+        expect($response->json('data'))->toHaveCount(2);
     });
 });
 
@@ -69,8 +67,7 @@ describe('follow and unfollow actions', function () {
         $other = User::factory()->create();
 
         $this->putJson(route('api.user.follow.follow', $other))
-            ->assertCreated()
-            ->assertJsonPath('message', '');
+            ->assertNoContent(201);
 
         assertDatabaseHas('follows', [
             'follower_id' => $this->user->id,
@@ -78,13 +75,12 @@ describe('follow and unfollow actions', function () {
         ]);
     });
 
-    it('returns 200 and removes the follow row on unfollow', function () {
+    it('returns 204 and removes the follow row on unfollow', function () {
         $other = User::factory()->create();
         (new FollowService)->follow($other);
 
         $this->putJson(route('api.user.follow.unfollow', $other))
-            ->assertOk()
-            ->assertJsonPath('message', '');
+            ->assertNoContent();
 
         assertDatabaseMissing('follows', [
             'follower_id' => $this->user->id,

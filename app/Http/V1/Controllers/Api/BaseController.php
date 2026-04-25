@@ -2,16 +2,11 @@
 
 namespace App\Http\V1\Controllers\Api;
 
-use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class BaseController extends Controller
 {
-    public function __construct(
-        protected ApiResponse $apiResponse
-    ) {}
-
     public function getLimit(Request $request): int
     {
         $limit = $request->query('limit');

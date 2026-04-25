@@ -13,7 +13,7 @@ class CommentService
     {
         return $post
             ->comments()
-            ->with(['user:id,name'])
+            ->with(['user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
@@ -32,7 +32,7 @@ class CommentService
             'post_id' => $post->id,
         ]);
 
-        return $this->withInteractionPresentation($comment->load('user:id,name'));
+        return $this->withInteractionPresentation($comment->load('user:id,name,email,role'));
     }
 
     public function updateComment(Comment $comment, string $content): Comment
@@ -40,7 +40,7 @@ class CommentService
         $comment->content = $content;
         $comment->save();
 
-        return $this->withInteractionPresentation($comment->load('user:id,name'));
+        return $this->withInteractionPresentation($comment->load('user:id,name,email,role'));
     }
 
     private function withInteractionPresentation(Comment $comment): Comment

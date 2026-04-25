@@ -18,7 +18,6 @@ describe('login', function () {
             ->assertOk();
 
         expect($response->json())->toHaveKeys([
-            'message',
             'data' => [
                 'token',
                 'user',

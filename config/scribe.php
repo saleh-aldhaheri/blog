@@ -22,6 +22,17 @@ return [
 
                     It allows clients to manage posts, comments, interactions (like/dislike), follows, and user activity such as viewed posts history. The API is designed to be consumed by web or mobile applications.
 
+                    <h2>Error responses</h2>
+                    <p>JSON error bodies under <code>api/*</code> follow a small set of shapes. Status codes use standard HTTP semantics.</p>
+                    <ul>
+                    <li><strong>401 Unauthenticated (missing/invalid token)</strong> — <code>{"message": "..."}</code> (no <code>errors</code> key).</li>
+                    <li><strong>401 or 422 with business rules</strong> (e.g. failed login) — <code>{"message": "...", "errors": []}</code> or field-specific <code>errors</code> when provided.</li>
+                    <li><strong>422 Validation</strong> — <code>{"message": "...", "errors": { "field": ["..."] }}</code> (Laravel-style messages).</li>
+                    <li><strong>403 Forbidden</strong> (e.g. policy) — <code>{"message": "..."}</code> (no <code>errors</code> key).</li>
+                    <li><strong>404 Not found</strong> (missing route model, etc.) — <code>{"message": "..."}</code>.</li>
+                    <li><strong>500 Server error</strong> — <code>{"message": "Server error"}</code>.</li>
+                    </ul>
+
                     <aside>
                     Authentication is handled via API tokens. Make sure to include the Authorization header in your requests when accessing protected endpoints.
 

@@ -35,7 +35,6 @@ describe('profile with authentication', function () {
                 'name' => 'Updated Display Name Here',
             ])
                 ->assertOk()
-                ->assertJsonPath('message', 'Profile updated successfully')
                 ->assertJsonPath('data.name', 'Updated Display Name Here');
 
             expect($this->user->fresh()->name)->toBe('Updated Display Name Here');
@@ -74,14 +73,13 @@ describe('profile with authentication', function () {
     });
 
     describe('profile password', function () {
-        it('returns 200 and changes password when current password matches', function () {
+        it('returns 204 and changes password when current password matches', function () {
             $this->putJson(route('api.user.profile.password'), [
                 'current_password' => 'password',
                 'password' => 'newpassword123',
                 'password_confirmation' => 'newpassword123',
             ])
-                ->assertOk()
-                ->assertJsonPath('message', 'Password changed successfully');
+                ->assertNoContent();
 
             expect(Hash::check('newpassword123', $this->user->fresh()->password))->toBeTrue();
         });

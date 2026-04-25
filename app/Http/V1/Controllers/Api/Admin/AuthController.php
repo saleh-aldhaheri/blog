@@ -30,13 +30,13 @@ class AuthController extends BaseController
      * @bodyParam password string required Min 8 characters.
      *
      * @response 200 scenario=success {
-     *   "message": "Login successful",
      *   "data": {
      *     "token": "2|abcdefghijklmnopqrstuvwxyz",
      *     "user": {
      *       "id": 1,
      *       "name": "Admin",
      *       "email": "admin@example.com",
+     *       "email_verified_at": "2026-01-15T12:00:00.000000Z",
      *       "role": "admin"
      *     }
      *   }
@@ -44,6 +44,10 @@ class AuthController extends BaseController
      * @response 401 scenario="invalid credentials" {
      *   "message": "unauthenticated",
      *   "errors": []
+     * }
+     * @response 422 scenario="validation" {
+     *   "message": "The email field is required.",
+     *   "errors": { "email": ["The email field is required."] }
      * }
      */
     public function login(Request $request): JsonResponse
@@ -70,10 +74,12 @@ class AuthController extends BaseController
             now()->plus(days: 3)
         );
 
-        return $this->apiResponse->success([
-            'token' => $token->plainTextToken,
-            'user' => $user,
-        ], 'Login successful', 200);
+        return response()->json([
+            'data' => [
+                'token' => $token->plainTextToken,
+                'user' => $user,
+            ],
+        ], 200);
     }
 
     /**

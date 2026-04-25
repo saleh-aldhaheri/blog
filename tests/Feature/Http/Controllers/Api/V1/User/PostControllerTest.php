@@ -29,8 +29,8 @@ describe('user posts', function () {
         $response = $this->getJson(route('api.user.user.posts', $owner->id))
             ->assertStatus(200);
 
-        expect($response->json()['data']['data'])->toHaveCount(10)
-            ->and(collect($response->json()['data']['data'])->pluck('status'))
+        expect($response->json('data'))->toHaveCount(10)
+            ->and(collect($response->json('data'))->pluck('status'))
             ->not->toContain(PostStatusEnum::DRAFT->value);
     });
 
@@ -51,8 +51,8 @@ describe('user posts', function () {
         $response = $this->getJson(route('api.user.user.posts', [$owner->id,  'limit' => 15]))
             ->assertStatus(200);
 
-        expect($response->json()['data']['data'])->toHaveCount(15)
-            ->and(collect($response->json()['data']['data'])->pluck('status'))
+        expect($response->json('data'))->toHaveCount(15)
+            ->and(collect($response->json('data'))->pluck('status'))
             ->toContain(PostStatusEnum::DRAFT->value);
     });
 
@@ -74,8 +74,8 @@ describe('user posts', function () {
         $response = $this->getJson(route('api.user.user.posts', [$owner->id, 'search' => $title]))
             ->assertStatus(200);
 
-        expect($response->json()['data']['data'])->toHaveCount(1)
-            ->and(collect($response->json()['data']['data'])->first()['title'])
+        expect($response->json('data'))->toHaveCount(1)
+            ->and(collect($response->json('data'))->first()['title'])
             ->toBe($title);
     });
 });
@@ -132,8 +132,8 @@ describe('index posts', function () {
         $response = $this->getJson(route('api.user.posts.index'), ['limit' => $limit])
             ->assertStatus(200);
 
-        expect($response->json()['data']['data'])->toHaveCount(10)
-            ->and(collect($response->json()['data']['data'])->pluck('status'))
+        expect($response->json('data'))->toHaveCount(10)
+            ->and(collect($response->json('data'))->pluck('status'))
             ->not->toContain(PostStatusEnum::DRAFT->value);
     })->with([2, 5, 10]);
 
@@ -157,8 +157,8 @@ describe('index posts', function () {
         $response = $this->getJson(route('api.user.posts.index', ['search' => $title]))
             ->assertStatus(200);
 
-        expect($response->json()['data']['data'])->toHaveCount(1)
-            ->and(collect($response->json()['data']['data'])->first()['title'])
+        expect($response->json('data'))->toHaveCount(1)
+            ->and(collect($response->json('data'))->first()['title'])
             ->toBe($title);
     });
 });
@@ -169,7 +169,7 @@ describe('post store - DTO validation', function () {
         Sanctum::actingAs($this->user);
     });
 
-    it('returns 201 with message and post data when PostData passes validation', function () {
+    it('returns 201 with post data when PostData passes validation', function () {
         $category = Category::factory()->create();
 
         $title = fake()->realText(80);
@@ -189,7 +189,6 @@ describe('post store - DTO validation', function () {
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('message', 'Post created successfully')
             ->assertJsonPath('data.title', $title);
 
         expect($response->json('data'))->toHaveKey('id')
@@ -299,7 +298,6 @@ describe('post update - DTO validation', function () {
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('message', 'Post Updated successfully')
             ->assertJsonPath('data.title', $newTitle)
             ->assertJsonPath('data.category_id', $newCategory->id);
     });
@@ -361,7 +359,7 @@ describe('get viewed posts', function () {
         $response = $this->getJson(route('api.user.posts.viewed'))
             ->assertOk();
 
-        expect($response->json()['data']['data'])->toHaveCount(0);
+        expect($response->json('data'))->toHaveCount(0);
     });
 
     it('returns 200 with only published posts the user has viewed', function () {
@@ -385,7 +383,7 @@ describe('get viewed posts', function () {
         $response = $this->getJson(route('api.user.posts.viewed'))
             ->assertOk();
 
-        $items = $response->json()['data']['data'];
+        $items = $response->json('data');
 
         expect($items)->toHaveCount(1)
             ->and($items[0]['id'])->toBe($viewedPublished->id)
@@ -414,8 +412,8 @@ describe('get viewed posts', function () {
         $response = $this->getJson(route('api.user.posts.viewed', ['search' => $needle]))
             ->assertOk();
 
-        expect($response->json()['data']['data'])->toHaveCount(1)
-            ->and($response->json()['data']['data'][0]['title'])->toBe($needle);
+        expect($response->json('data'))->toHaveCount(1)
+            ->and($response->json('data')[0]['title'])->toBe($needle);
     });
 
     it('returns 200 and respects the limit query parameter', function () {
@@ -430,6 +428,6 @@ describe('get viewed posts', function () {
         $response = $this->getJson(route('api.user.posts.viewed', ['limit' => 4]))
             ->assertOk();
 
-        expect($response->json()['data']['data'])->toHaveCount(4);
+        expect($response->json('data'))->toHaveCount(4);
     });
 });

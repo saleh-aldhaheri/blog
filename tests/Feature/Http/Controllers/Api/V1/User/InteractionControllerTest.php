@@ -29,10 +29,10 @@ describe('post interactions', function () {
             'action' => InteractionTypeEnum::LIKE->value,
         ])->assertCreated();
 
-        $response->assertJsonPath('data.interaction.user_id', $this->user->id)
-            ->assertJsonPath('data.interaction.interactable_id', $post->id)
-            ->assertJsonPath('data.interaction.interactable_type', Post::class)
-            ->assertJsonPath('data.interaction.action', InteractionTypeEnum::LIKE->value);
+        $response->assertJsonPath('data.user_id', $this->user->id)
+            ->assertJsonPath('data.interactable_id', $post->id)
+            ->assertJsonPath('data.interactable_type', Post::class)
+            ->assertJsonPath('data.action', InteractionTypeEnum::LIKE->value);
 
         assertDatabaseHas('interactions', [
             'user_id' => $this->user->id,
@@ -131,7 +131,6 @@ describe('post interactions', function () {
 
         assertDatabaseHas('interactions', ['id' => $interaction->id]);
     });
-
 });
 
 describe('comment interactions', function () {
@@ -155,10 +154,10 @@ describe('comment interactions', function () {
             'action' => InteractionTypeEnum::WOW->value,
         ])->assertCreated();
 
-        $response->assertJsonPath('data.interaction.user_id', $this->user->id)
-            ->assertJsonPath('data.interaction.interactable_id', $comment->id)
-            ->assertJsonPath('data.interaction.interactable_type', Comment::class)
-            ->assertJsonPath('data.interaction.action', InteractionTypeEnum::WOW->value);
+        $response->assertJsonPath('data.user_id', $this->user->id)
+            ->assertJsonPath('data.interactable_id', $comment->id)
+            ->assertJsonPath('data.interactable_type', Comment::class)
+            ->assertJsonPath('data.action', InteractionTypeEnum::WOW->value);
 
         assertDatabaseHas('interactions', [
             'user_id' => $this->user->id,
@@ -237,7 +236,6 @@ describe('comment interactions', function () {
 
         assertDatabaseHas('interactions', ['id' => $interaction->id]);
     });
-
 });
 
 describe('interaction routes without authentication', function () {

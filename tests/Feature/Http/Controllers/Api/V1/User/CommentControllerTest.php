@@ -29,9 +29,17 @@ describe('comment index', function () {
         $response = $this->getJson(route('api.user.posts.comments.index', $post))
             ->assertOk();
 
-        $items = $response->json('data.data');
+        $items = $response->json('data');
+
         expect($items)->toHaveCount(4)
-            ->and(collect($items)->first())->toHaveKeys(['id', 'content', 'user']);
+            ->and(collect($items)->first())->toHaveKeys([
+                'id',
+                'content',
+                'user',
+                'interaction_counts',
+                'created_at',
+                'updated_at',
+            ]);
     });
 
     it('returns 200 and only comments matching search in content', function () {
@@ -58,8 +66,8 @@ describe('comment index', function () {
 
         $response = $this->getJson($url)->assertOk();
 
-        expect($response->json('data.data'))->toHaveCount(1)
-            ->and($response->json('data.data.0.content'))->toContain($needle);
+        expect($response->json('data'))->toHaveCount(1)
+            ->and($response->json('data.0.content'))->toContain($needle);
     });
 
     it('respects the limit query parameter', function () {
@@ -77,7 +85,7 @@ describe('comment index', function () {
 
         $response = $this->getJson($url)->assertOk();
 
-        expect($response->json('data.data'))->toHaveCount(3);
+        expect($response->json('data'))->toHaveCount(3);
     });
 });
 
@@ -98,9 +106,27 @@ describe('comment store', function () {
         $response = $this->postJson(route('api.user.posts.comments.store', $post), [
             'comment' => $body,
         ])->assertCreated()
-            ->assertJsonPath('message', 'Comment created successfully')
             ->assertJsonPath('data.content', $body)
-            ->assertJsonPath('data.user.id', $this->user->id);
+            ->assertJsonPath('data.user.id', $this->user->id)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'content',
+                    'post_id',
+                    'user_id',
+                    'user' => ['id', 'name', 'email', 'role'],
+                    'interaction_counts' => [
+                        'like',
+                        'dislike',
+                        'wow',
+                        'love',
+                        'hate',
+                    ],
+                    'my_interaction',
+                    'created_at',
+                    'updated_at',
+                ],
+            ]);
     });
 
     it('returns 422 when comment is too short', function () {
@@ -150,7 +176,6 @@ describe('comment update', function () {
         $this->putJson(route('api.user.comments.update', $comment), [
             'comment' => $newBody,
         ])->assertOk()
-            ->assertJsonPath('message', 'Comment updated successfully')
             ->assertJsonPath('data.content', $newBody);
     });
 

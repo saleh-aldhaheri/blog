@@ -4,11 +4,12 @@ namespace App\Http\V1\Controllers\Api\User;
 
 use App\Data\PostData;
 use App\Data\UpdatePostData;
+use App\Enums\InteractionTypeEnum;
 use App\Http\V1\Controllers\Api\BaseController;
+use App\Http\V1\Resources\PostResource;
 use App\Models\Post;
 use App\Models\User;
 use App\Services\PostService;
-use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,11 +17,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class PostController extends BaseController
 {
     public function __construct(
-        ApiResponse $apiResponse,
         private PostService $postService
-    ) {
-        parent::__construct($apiResponse);
-    }
+    ) {}
 
     /**
      * List published posts
@@ -35,12 +33,22 @@ class PostController extends BaseController
      * @queryParam limit int optional Page size (1–50, default 10). Example: 10
      *
      * @response 200 scenario=success {
-     *   "message": "",
-     *   "data": {
-     *     "data": [{"id": 1, "title": "Hello", "status": "published"}],
-     *     "path": "http://localhost/api/v1/posts",
-     *     "per_page": 10
-     *   }
+     *   "data": [
+     *     {
+     *       "id": 1,
+     *       "title": "Hello",
+     *       "status": "published",
+     *       "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
+     *       "category": { "id": 1, "name": "Tech" },
+     *       "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *       "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
+     *       "my_interaction": null,
+     *       "created_at": "2026-01-15T12:00:00+00:00",
+     *       "updated_at": "2026-01-15T12:00:00+00:00"
+     *     }
+     *   ],
+     *   "links": { "first": null, "last": null, "prev": null, "next": null },
+     *   "meta": { "path": "https://example.com", "per_page": 10, "next_cursor": null, "prev_cursor": null }
      * }
      */
     public function index(Request $request): JsonResponse
@@ -50,11 +58,8 @@ class PostController extends BaseController
 
         $posts = $this->postService->getPosts($search, $limit);
 
-        return $this->apiResponse->success(
-            data: $posts,
-            message: '',
-            code: 200
-        );
+        return PostResource::collection($posts)
+            ->response();
     }
 
     /**
@@ -72,11 +77,22 @@ class PostController extends BaseController
      * @queryParam limit int optional Page size (1–50, default 10). Example: 15
      *
      * @response 200 scenario=success {
-     *   "message": "",
-     *   "data": {
-     *     "data": [],
-     *     "per_page": 10
-     *   }
+     *   "data": [
+     *      *     {
+     *       "id": 1,
+     *       "title": "Hello",
+     *       "status": "published",
+     *       "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
+     *       "category": { "id": 1, "name": "Tech" },
+     *       "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *       "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
+     *       "my_interaction": null,
+     *       "created_at": "2026-01-15T12:00:00+00:00",
+     *       "updated_at": "2026-01-15T12:00:00+00:00"
+     *     }
+     * ],
+     *   "links": { "first": null, "last": null, "prev": null, "next": null },
+     *   "meta": { "path": "https://example.com", "per_page": 10, "next_cursor": null, "prev_cursor": null }
      * }
      */
     public function userPosts(User $user, Request $request): JsonResponse
@@ -86,11 +102,8 @@ class PostController extends BaseController
 
         $posts = $this->postService->getUserPosts($user, $search, $limit);
 
-        return $this->apiResponse->success(
-            data: $posts,
-            message: '',
-            code: 200
-        );
+        return PostResource::collection($posts)
+            ->response();
     }
 
     /**
@@ -106,11 +119,22 @@ class PostController extends BaseController
      * @queryParam limit int optional Page size. Example: 10
      *
      * @response 200 scenario=success {
-     *   "message": "",
-     *   "data": {
-     *     "data": [],
-     *     "per_page": 10
-     *   }
+     *   "data": [
+     *      *     {
+     *       "id": 1,
+     *       "title": "Hello",
+     *       "status": "published",
+     *       "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
+     *       "category": { "id": 1, "name": "Tech" },
+     *       "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *       "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
+     *       "my_interaction": null,
+     *       "created_at": "2026-01-15T12:00:00+00:00",
+     *       "updated_at": "2026-01-15T12:00:00+00:00"
+     *     }
+     * ],
+     *   "links": { "first": null, "last": null, "prev": null, "next": null },
+     *   "meta": { "path": "https://example.com", "per_page": 10, "next_cursor": null, "prev_cursor": null }
      * }
      */
     public function viewedPosts(Request $request): JsonResponse
@@ -120,11 +144,8 @@ class PostController extends BaseController
 
         $posts = $this->postService->getViewedPosts($search, $limit);
 
-        return $this->apiResponse->success(
-            data: $posts,
-            message: '',
-            code: 200
-        );
+        return PostResource::collection($posts)
+            ->response();
     }
 
     /**
@@ -139,18 +160,25 @@ class PostController extends BaseController
      * @urlParam post integer required Post ID. Example: 1
      *
      * @response 200 scenario=success {
-     *   "message": "",
      *   "data": {
      *     "id": 1,
      *     "title": "Hello",
+     *     "content": [],
      *     "status": "published",
-     *     "category": {"id": 1, "name": "Tech"},
-     *     "user": {"id": 1, "name": "Jane"}
+     *     "user_id": 1,
+     *     "category_id": 1,
+     *     "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
+     *     "category": { "id": 1, "name": "Tech" },
+     *     "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *     "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
+     *     "my_interaction": null,
+     *     "comments_count": 3,
+     *     "created_at": "2026-01-15T12:00:00+00:00",
+     *     "updated_at": "2026-01-15T12:00:00+00:00"
      *   }
      * }
      * @response 403 scenario="forbidden (e.g. draft of another user)" {
-     *   "message": "This action is unauthorized.",
-     *   "errors": []
+     *   "message": "This action is unauthorized."
      * }
      */
     public function show(Post $post): JsonResponse
@@ -159,11 +187,7 @@ class PostController extends BaseController
 
         $this->postService->markAsViewed($post);
 
-        return $this->apiResponse->success(
-            data: $post,
-            message: '',
-            code: 200
-        );
+        return (new PostResource($post))->response();
     }
 
     /**
@@ -181,14 +205,26 @@ class PostController extends BaseController
      * @bodyParam thumbnails file required Featured image.
      * @bodyParam content array required Array of blocks (`heading`, `text`, `media`). No-example
      *
+     * @response 422 scenario="validation" {
+     *   "message": "The title field is required. (and 2 more errors)",
+     *   "errors": { "title": ["The title field is required."] }
+     * }
      * @response 201 scenario=success {
-     *   "message": "Post created successfully",
      *   "data": {
      *     "id": 5,
      *     "title": "My first long enough blog post title",
+     *     "content": [],
      *     "status": "published",
      *     "user_id": 1,
-     *     "category_id": 1
+     *     "category_id": 1,
+     *     "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
+     *     "category": { "id": 1, "name": "Tech" },
+     *     "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *     "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
+     *     "my_interaction": null,
+     *     "comments_count": 0,
+     *     "created_at": "2026-01-15T12:00:00+00:00",
+     *     "updated_at": "2026-01-15T12:00:00+00:00"
      *   }
      * }
      */
@@ -196,11 +232,9 @@ class PostController extends BaseController
     {
         $data = $this->postService->storePost($postData);
 
-        return $this->apiResponse->success(
-            data: $data,
-            message: 'Post created successfully',
-            code: 201
-        );
+        return (new PostResource($this->postWithResourcePresentation($data)))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -219,28 +253,37 @@ class PostController extends BaseController
      * @bodyParam status string optional `published` or `draft`
      * @bodyParam content array optional Replacement blocks; omit or null to leave content unchanged. No-example
      *
+     * @response 422 scenario="validation" {
+     *   "message": "The title field must be at least 20 characters.",
+     *   "errors": { "title": ["The title field must be at least 20 characters."] }
+     * }
      * @response 200 scenario=success {
-     *   "message": "Post Updated successfully",
      *   "data": {
      *     "id": 1,
      *     "title": "Updated title that is long enough here",
-     *     "status": "published"
+     *     "content": [],
+     *     "status": "published",
+     *     "user_id": 1,
+     *     "category_id": 2,
+     *     "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
+     *     "category": { "id": 2, "name": "Life" },
+     *     "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *     "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
+     *     "my_interaction": null,
+     *     "comments_count": 0,
+     *     "created_at": "2026-01-15T12:00:00+00:00",
+     *     "updated_at": "2026-01-15T12:00:00+00:00"
      *   }
      * }
      * @response 403 scenario="not owner" {
-     *   "message": "This action is unauthorized.",
-     *   "errors": []
+     *   "message": "This action is unauthorized."
      * }
      */
     public function update(Post $post, UpdatePostData $updatePostData): JsonResponse
     {
         $post = $this->postService->updatePost($post, $updatePostData);
 
-        return $this->apiResponse->success(
-            data: $post,
-            message: 'Post Updated successfully',
-            code: 200
-        );
+        return (new PostResource($this->postWithResourcePresentation($post)))->response();
     }
 
     /**
@@ -256,8 +299,7 @@ class PostController extends BaseController
      *
      * @response 204 scenario=success
      * @response 403 scenario="not owner" {
-     *   "message": "This action is unauthorized.",
-     *   "errors": []
+     *   "message": "This action is unauthorized."
      * }
      */
     public function destroy(Post $post): Response
@@ -265,5 +307,19 @@ class PostController extends BaseController
         $this->postService->destroyPost($post);
 
         return response()->noContent();
+    }
+
+    private function postWithResourcePresentation(Post $post): Post
+    {
+        $post->load(['category:id,name', 'user:id,name,email,role']);
+        $post->loadCount(array_merge(
+            ['comments'],
+            InteractionTypeEnum::actionsInteractionsCounts(),
+        ));
+        $post->load([
+            'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
+        ]);
+
+        return $post;
     }
 }
