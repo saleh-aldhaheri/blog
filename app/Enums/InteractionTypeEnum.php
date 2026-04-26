@@ -10,7 +10,7 @@ enum InteractionTypeEnum: string
     case LOVE = 'love';
     case HATE = 'hate';
 
-    public static function actionsInteractionsCounts(string $relation = 'interactions'): array
+    public static function actionsInteractionsCounts(): array
     {
         return collect(InteractionTypeEnum::cases())->mapWithKeys(function ($action) {
             return ["interactions as {$action->value}_count" => fn ($query) => $query->where('action', $action->value)];

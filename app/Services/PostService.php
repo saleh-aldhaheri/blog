@@ -22,6 +22,7 @@ class PostService
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
+            ->with('comments')
             ->when(
                 auth()->id() !== $user->id,
                 fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
@@ -38,6 +39,7 @@ class PostService
             ->search($search)
             ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->withCount('comments')
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
@@ -60,6 +62,8 @@ class PostService
             'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
         ]);
 
+        $post->withCount('comments');
+        $post->withCount(InteractionTypeEnum::actionsInteractionsCounts());
         return $post;
     }
 
@@ -206,6 +210,7 @@ class PostService
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
+            ->with('comments')
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->search($search)
             ->orderBy('created_at')
