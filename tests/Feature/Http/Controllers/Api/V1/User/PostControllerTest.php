@@ -78,6 +78,62 @@ describe('user posts', function () {
             ->and(collect($response->json('data'))->first()['title'])
             ->toBe($title);
     });
+
+    it('returns 200 and only posts matching status when the viewer is the owner', function () {
+        $owner = User::factory(1)->create()->first();
+        $this->actingAs($owner);
+
+        Post::factory(4)->create([
+            'user_id' => $owner->id,
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+        Post::factory(3)->create([
+            'user_id' => $owner->id,
+            'status' => PostStatusEnum::DRAFT,
+        ]);
+
+        $drafts = $this->getJson(route('api.user.user.posts', [$owner->id, 'status' => PostStatusEnum::DRAFT->value]))
+            ->assertOk()
+            ->json('data');
+        expect($drafts)->toHaveCount(3);
+        expect(collect($drafts)->pluck('status')->unique()->all())->toBe([PostStatusEnum::DRAFT->value]);
+
+        $published = $this->getJson(route('api.user.user.posts', [$owner->id, 'status' => PostStatusEnum::PUBLISHED->value]))
+            ->assertOk()
+            ->json('data');
+        expect($published)->toHaveCount(4);
+        expect(collect($published)->pluck('status')->unique()->all())->toBe([PostStatusEnum::PUBLISHED->value]);
+    });
+
+    it('ignores status for non-owners and still returns only published posts', function () {
+        $owner = User::factory(1)->create()->first();
+        Post::factory(2)->create([
+            'user_id' => $owner->id,
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+        Post::factory(5)->create([
+            'user_id' => $owner->id,
+            'status' => PostStatusEnum::DRAFT,
+        ]);
+
+        $response = $this->getJson(route('api.user.user.posts', [
+            'user' => $owner->id,
+            'status' => PostStatusEnum::DRAFT->value,
+        ]))
+            ->assertOk();
+
+        expect($response->json('data'))->toHaveCount(2)
+            ->and(collect($response->json('data'))->pluck('status')->unique()->all())
+            ->toBe([PostStatusEnum::PUBLISHED->value]);
+    });
+
+    it('returns 422 when the owner passes an invalid status', function () {
+        $owner = User::factory(1)->create()->first();
+        $this->actingAs($owner);
+
+        $this->getJson(route('api.user.user.posts', [$owner->id, 'status' => 'nope']))
+            ->assertUnprocessable();
+    });
 });
 
 describe('show post', function () {
