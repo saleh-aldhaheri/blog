@@ -91,6 +91,48 @@ describe('getUserPosts', function () {
 
         expect($result->items())->toHaveCount(0);
     });
+
+    it('ignores status filter when the authenticated user is not the profile owner', function () {
+        $viewer = User::factory(1)->create()->first();
+        $owner = User::factory(1)->create()->first();
+        $this->actingAs($viewer);
+
+        Post::factory(2)->create([
+            'user_id' => $owner->id,
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+        Post::factory(3)->create([
+            'user_id' => $owner->id,
+            'status' => PostStatusEnum::DRAFT->value,
+        ]);
+
+        $result = $this->postService->getUserPosts(
+            user: $owner,
+            status: PostStatusEnum::DRAFT
+        );
+
+        expect($result->items())->toHaveCount(2);
+    });
+
+    it('filters by status for the owner', function () {
+        $user = User::factory(1)->create()->first();
+        $this->actingAs($user);
+
+        Post::factory(2)->create([
+            'user_id' => $user->id,
+            'status' => PostStatusEnum::PUBLISHED->value,
+        ]);
+        Post::factory(3)->create([
+            'user_id' => $user->id,
+            'status' => PostStatusEnum::DRAFT->value,
+        ]);
+
+        $drafts = $this->postService->getUserPosts(user: $user, status: PostStatusEnum::DRAFT);
+        expect($drafts->items())->toHaveCount(3);
+
+        $published = $this->postService->getUserPosts(user: $user, status: PostStatusEnum::PUBLISHED);
+        expect($published->items())->toHaveCount(2);
+    });
 });
 
 describe('getPosts', function () {

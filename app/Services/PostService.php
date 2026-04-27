@@ -14,14 +14,23 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PostService
 {
-    public function getUserPosts(User $user, ?string $search = '', int $limit = 10): CursorPaginator
+    public function getUserPosts(User $user, ?string $search = '', int $limit = 10, ?PostStatusEnum $status = null): CursorPaginator
     {
+        if (auth()->id() !== $user->id) {
+            $status = null;
+        }
+
         return $user->posts()
             ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
+            ->with('comments')
+            ->when(
+                $status !== null,
+                fn ($q) => $q->where('status', $status->value)
+            )
             ->when(
                 auth()->id() !== $user->id,
                 fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
@@ -38,6 +47,7 @@ class PostService
             ->search($search)
             ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->withCount('comments')
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
@@ -59,6 +69,9 @@ class PostService
         $post->load([
             'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
         ]);
+
+        $post->withCount('comments');
+        $post->withCount(InteractionTypeEnum::actionsInteractionsCounts());
 
         return $post;
     }
@@ -206,6 +219,7 @@ class PostService
             ->with([
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
+            ->with('comments')
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->search($search)
             ->orderBy('created_at')

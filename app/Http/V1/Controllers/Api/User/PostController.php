@@ -5,6 +5,7 @@ namespace App\Http\V1\Controllers\Api\User;
 use App\Data\PostData;
 use App\Data\UpdatePostData;
 use App\Enums\InteractionTypeEnum;
+use App\Enums\PostStatusEnum;
 use App\Http\V1\Controllers\Api\BaseController;
 use App\Http\V1\Resources\PostResource;
 use App\Models\Post;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Services\PostService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class PostController extends BaseController
@@ -75,6 +77,7 @@ class PostController extends BaseController
      *
      * @queryParam search string optional Filter by title. Example: tips
      * @queryParam limit int optional Page size (1–50, default 10). Example: 15
+     * @queryParam status string optional When the authenticated user is the profile owner, filter by `published` or `draft`. Ignored for other viewers. Example: draft
      *
      * @response 200 scenario=success {
      *   "data": [
@@ -100,7 +103,17 @@ class PostController extends BaseController
         $search = $this->getSearch($request);
         $limit = $this->getLimit($request);
 
-        $posts = $this->postService->getUserPosts($user, $search, $limit);
+        $status = null;
+        if (auth()->id() === $user->id && $request->filled('status')) {
+            $validated = $request->validate([
+                'status' => ['required', 'string', Rule::enum(PostStatusEnum::class)],
+            ]);
+            $status = $validated['status'] instanceof PostStatusEnum
+                ? $validated['status']
+                : PostStatusEnum::from($validated['status']);
+        }
+
+        $posts = $this->postService->getUserPosts($user, $search, $limit, $status);
 
         return PostResource::collection($posts)
             ->response();

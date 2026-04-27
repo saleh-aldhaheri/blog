@@ -29,6 +29,7 @@ class Post extends Model implements HasMedia
 
     protected $searchable = [
         'title',
+        'status'
     ];
 
     protected $casts = [
