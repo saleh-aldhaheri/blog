@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\V1\Controllers\Api\User\AuthController;
+use App\Http\V1\Controllers\Api\User\CategoryController;
 use App\Http\V1\Controllers\Api\User\CommentController;
 use App\Http\V1\Controllers\Api\User\CommentInteractionController;
 use App\Http\V1\Controllers\Api\User\FollowController;
@@ -55,3 +56,5 @@ Route::prefix('follow')->as('follow.')->group(function () {
     Route::put('/following/follow/{user}', [FollowController::class,  'follow'])->name('follow');
     Route::put('/following/unfollow/{user}', [FollowController::class,  'unfollow'])->name('unfollow');
 });
+
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories');

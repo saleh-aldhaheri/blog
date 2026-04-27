@@ -24,10 +24,7 @@ class PostResource extends JsonResource
             'category_id' => $this->category_id,
             'user' => UserResource::make($this->user),
             'category' => $this->category !== null
-                ? [
-                    'id' => $this->category->id,
-                    'name' => $this->category->name,
-                ]
+                ? new CategoryResource($this->category)
                 : null,
             'thumbnail' => $this->getFirstMediaUrl('post-thumbnails') ?: null,
             'interaction_counts' => collect(InteractionTypeEnum::cases())
