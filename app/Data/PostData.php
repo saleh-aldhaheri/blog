@@ -39,11 +39,12 @@ class PostData extends Data
                 'required_if:content.*.type,heading',
                 'required_if:content.*.type,text',
             ],
-            'content.*.file' => [
-                'nullable',
+            'content.*.media' => ['required_if:content.*.type,media', 'array'],
+            'content.*.media.newMedia' => [
+                'required_if:content.*.type,media',
                 'file',
                 'image',
-                'required_if:content.*.type,media',
+                'max:10240',
             ],
         ];
     }

@@ -10,6 +10,8 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\DB;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\Optional;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PostService
@@ -101,7 +103,7 @@ class PostService
 
                     if ($content->type === 'media') {
                         $media = $post
-                            ->addMedia($content->file)
+                            ->addMedia($content->media->newMedia)
                             ->toMediaCollection('post-content');
                         $data['media']['url'] = $media->getUrl();
                         $data['media']['id'] = $media->id;
@@ -128,11 +130,23 @@ class PostService
     {
         return DB::transaction(function () use ($post, $updatePostData): Post {
 
-            $post->title = $updatePostData->title;
-            $post->status = $updatePostData->status;
+            if (! $updatePostData->title instanceof Optional) {
+                $post->title = $updatePostData->title;
+            }
+
+            if (! $updatePostData->status instanceof Optional) {
+                $post->status = $updatePostData->status;
+            }
+
             $post->category_id = $updatePostData->categoryId;
 
-            if ($updatePostData->content !== null) {
+            if ($updatePostData->thumbnails) {
+                $post->clearMediaCollection('post-thumbnails');
+                $post->addMedia($updatePostData->thumbnails)
+                    ->toMediaCollection('post-thumbnails');
+            }
+
+            if ($updatePostData->content instanceof DataCollection) {
 
                 $existingMediaIds = collect($post->content)
                     ->where('type', 'media')
@@ -158,21 +172,24 @@ class PostService
                         $item = ['type' => $block->type];
 
                         if ($block->type === 'media') {
+                            $m = $block->media;
 
-                            if ($block->media?->newMedia) {
-                                Media::findOrFail($block->media->id)->delete();
+                            if ($m->newMedia) {
+                                if ($m->id) {
+                                    Media::findOrFail($m->id)->delete();
+                                }
 
-                                $media = $post->addMedia($block->media->newMedia)
+                                $uploaded = $post->addMedia($m->newMedia)
                                     ->toMediaCollection('post-content');
 
                                 $item['media'] = [
-                                    'id' => $media->id,
-                                    'url' => $media->getUrl(),
+                                    'id' => $uploaded->id,
+                                    'url' => $uploaded->getUrl(),
                                 ];
                             } else {
                                 $item['media'] = [
-                                    'id' => $block->media->id,
-                                    'url' => $block->media->url,
+                                    'id' => $m->id,
+                                    'url' => $m->url,
                                 ];
                             }
                         } else {

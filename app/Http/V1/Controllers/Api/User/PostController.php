@@ -206,17 +206,22 @@ class PostController extends BaseController
     /**
      * Create post
      *
-     * `multipart/form-data` request.
+     * Send `multipart/form-data` (not JSON). Featured image: `thumbnails`. Each `content` block must use the same numeric index in every form field, for example: `content[0][type]`, `content[0][order]`, `content[0][value]`, and for a media block `content[1][type]=media` with `content[1][order]` and `content[1][media][newMedia]` (file). The index does not have to match `order`.
      *
      * @group v1 /user
      *
      * @subgroup Posts
      *
-     * @bodyParam title string required Post title (min 20 chars). Example: My first long enough blog post title
-     * @bodyParam categoryId integer required Category ID. Example: 1
-     * @bodyParam status string optional `published` or `draft`. Example: published
-     * @bodyParam thumbnails file required Featured image.
-     * @bodyParam content array required Array of blocks (`heading`, `text`, `media`). No-example
+     * @bodyParam title string required Post title (min 5). Example: My first post title
+     * @bodyParam categoryId integer required Category id. Example: 1
+     * @bodyParam status string optional published or draft (default draft if omitted). Example: published
+     * @bodyParam thumbnails file required Featured image (jpeg, png, gif; max 10MB).
+     * @bodyParam content object[] required At least one block. Each item is one block.
+     * @bodyParam content[].type string required One of: heading, text, media. Example: heading
+     * @bodyParam content[].order integer required Display order. Example: 1
+     * @bodyParam content[].value string optional Set for heading and text blocks. Example: Introduction
+     * @bodyParam content[].media object optional For type media only: send newMedia file here.
+     * @bodyParam content[].media.newMedia file optional Required when type is media. In-post image (jpeg, png, gif; max 10MB). No-example
      *
      * @response 422 scenario="validation" {
      *   "message": "The title field is required. (and 2 more errors)",
@@ -225,14 +230,18 @@ class PostController extends BaseController
      * @response 201 scenario=success {
      *   "data": {
      *     "id": 5,
-     *     "title": "My first long enough blog post title",
-     *     "content": [],
+     *     "title": "My first post title",
+     *     "content": [
+     *       { "type": "heading", "value": "Introduction", "order": 1 },
+     *       { "type": "text", "value": "This is the body of the post.", "order": 2 },
+     *       { "type": "media", "order": 3, "media": { "id": 42, "url": "https://example.com/storage/42/photo.jpg" } }
+     *     ],
      *     "status": "published",
      *     "user_id": 1,
      *     "category_id": 1,
      *     "user": { "id": 1, "name": "Jane", "email": "jane@example.com", "role": "user" },
      *     "category": { "id": 1, "name": "Tech" },
-     *     "thumbnail": "https://example.com/media/1/thumb.jpg",
+     *     "thumbnail": "https://example.com/media/1/conversions/thumb.jpg",
      *     "interaction_counts": { "like": 0, "dislike": 0, "wow": 0, "love": 0, "hate": 0 },
      *     "my_interaction": null,
      *     "comments_count": 0,
@@ -253,7 +262,7 @@ class PostController extends BaseController
     /**
      * Update post
      *
-     * `multipart/form-data`request.
+     * Use `application/json` when you are not uploading files. Use `multipart/form-data` with the same indexed field names as create (`content[0][type]`, `content[0][media][newMedia]`, etc.) when replacing in-post media. Omit `content` or set it to `null` to leave body blocks unchanged. If `content` is sent (including an empty array), the stored blocks are fully replaced; media not referenced in the new list is removed.
      *
      * @group v1 /user
      *
@@ -261,20 +270,32 @@ class PostController extends BaseController
      *
      * @urlParam post integer required Post ID. Example: 1
      *
-     * @bodyParam title string optional Min 20 when present.
-     * @bodyParam categoryId integer required
-     * @bodyParam status string optional `published` or `draft`
-     * @bodyParam content array optional Replacement blocks; omit or null to leave content unchanged. No-example
+     * @bodyParam categoryId integer required Category id. Example: 2
+     * @bodyParam title string optional If omitted, title is unchanged. Min 5 when present. Example: A new post title
+     * @bodyParam status string optional published or draft. If omitted, status is unchanged. Example: published
+     * @bodyParam thumbnails file optional New featured image; replaces the existing thumbnail when provided (jpeg, png, gif; max 10MB). No-example
+     * @bodyParam content object[] optional Full list of blocks. Omit or null to keep existing. If present, replaces entire content.
+     * @bodyParam content[].type string required One of: heading, text, media. Example: text
+     * @bodyParam content[].order integer required Example: 1
+     * @bodyParam content[].value string optional For heading and text. Example: Hello
+     * @bodyParam content[].media object optional For type media: id and url from GET to keep; newMedia to replace. No-example
+     * @bodyParam content[].media.id integer optional Existing media id from GET. No-example
+     * @bodyParam content[].media.url string optional Existing media URL from GET. No-example
+     * @bodyParam content[].media.newMedia file optional New in-post image when replacing (jpeg, png, gif; max 10MB). No-example
      *
      * @response 422 scenario="validation" {
-     *   "message": "The title field must be at least 20 characters.",
-     *   "errors": { "title": ["The title field must be at least 20 characters."] }
+     *   "message": "The title field must be at least 5 characters.",
+     *   "errors": { "title": ["The title field must be at least 5 characters."] }
      * }
      * @response 200 scenario=success {
      *   "data": {
      *     "id": 1,
-     *     "title": "Updated title that is long enough here",
-     *     "content": [],
+     *     "title": "Updated post title",
+     *     "content": [
+     *       { "type": "heading", "value": "Section title", "order": 1, "media": null },
+     *       { "type": "text", "value": "Paragraph body.", "order": 2, "media": null },
+     *       { "type": "media", "value": null, "order": 3, "media": { "id": 12, "url": "https://example.com/storage/12/image.jpg" } }
+     *     ],
      *     "status": "published",
      *     "user_id": 1,
      *     "category_id": 2,

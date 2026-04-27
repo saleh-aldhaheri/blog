@@ -3,7 +3,6 @@
 use App\Data\PostContentData;
 use App\Data\PostContentMediaData;
 use App\Data\PostData;
-use App\Data\UpdatePostContentData;
 use App\Data\UpdatePostData;
 use App\Enums\PostStatusEnum;
 use App\Enums\RoleEnum;
@@ -207,7 +206,12 @@ describe('store', function () {
                 $value = fake()->text();
             }
 
-            $blocks[] = new PostContentData($type, $i, $value, $file);
+            $blocks[] = new PostContentData(
+                type: $type,
+                value: $value,
+                order: $i,
+                media: $file ? new PostContentMediaData(newMedia: $file) : null,
+            );
         }
 
         $postData = new PostData(
@@ -231,8 +235,8 @@ describe('store', function () {
         $category = Category::factory()->create();
 
         $blocks = [
-            new PostContentData('heading', 1, fake()->text(), null),
-            new PostContentData('text', 2, fake()->text(), null),
+            new PostContentData(type: 'heading', value: fake()->text(), order: 1, media: null),
+            new PostContentData(type: 'text', value: fake()->text(), order: 2, media: null),
         ];
 
         $postData = new PostData(
@@ -257,7 +261,7 @@ describe('store', function () {
         $this->actingAs($user);
 
         $blocks = [
-            new PostContentData('text', 1, fake()->text(), null),
+            new PostContentData(type: 'text', value: fake()->text(), order: 1, media: null),
         ];
 
         $postData = new PostData(
@@ -279,9 +283,14 @@ describe('store', function () {
         $this->actingAs($user);
 
         $blocks = [
-            new PostContentData('heading', 1, 'Section title for the post block', null),
-            new PostContentData('text', 2, fake()->paragraph(), null),
-            new PostContentData('media', 3, null, UploadedFile::fake()->image('inline.jpg')),
+            new PostContentData(type: 'heading', value: 'Section title for the post block', order: 1, media: null),
+            new PostContentData(type: 'text', value: fake()->paragraph(), order: 2, media: null),
+            new PostContentData(
+                type: 'media',
+                value: null,
+                order: 3,
+                media: new PostContentMediaData(newMedia: UploadedFile::fake()->image('inline.jpg')),
+            ),
         ];
 
         $postData = new PostData(
@@ -314,8 +323,18 @@ describe('store', function () {
         $this->actingAs($user);
 
         $blocks = [
-            new PostContentData('media', 1, null, UploadedFile::fake()->image('a.jpg')),
-            new PostContentData('media', 2, null, UploadedFile::fake()->image('b.jpg')),
+            new PostContentData(
+                type: 'media',
+                value: null,
+                order: 1,
+                media: new PostContentMediaData(newMedia: UploadedFile::fake()->image('a.jpg')),
+            ),
+            new PostContentData(
+                type: 'media',
+                value: null,
+                order: 2,
+                media: new PostContentMediaData(newMedia: UploadedFile::fake()->image('b.jpg')),
+            ),
         ];
 
         $postData = new PostData(
@@ -375,13 +394,13 @@ describe('update', function () {
         ]);
 
         $incoming = [
-            new UpdatePostContentData(
+            new PostContentData(
                 type: 'heading',
                 value: 'New heading that is long enough here',
                 order: 1,
                 media: null,
             ),
-            new UpdatePostContentData(
+            new PostContentData(
                 type: 'text',
                 value: 'Replacement body text for the updated post.',
                 order: 2,
@@ -392,7 +411,7 @@ describe('update', function () {
         $update = new UpdatePostData(
             title: fake()->realText(80),
             categoryId: $post->category_id,
-            content: UpdatePostContentData::collect($incoming, DataCollection::class),
+            content: PostContentData::collect($incoming, DataCollection::class),
             status: PostStatusEnum::DRAFT->value,
         );
 
@@ -404,14 +423,48 @@ describe('update', function () {
             ->and($updated->content[1]['value'])->toBe('Replacement body text for the updated post.');
     });
 
+    it('replaces the featured thumbnail when a thumbnails file is provided', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $post = $this->postService->storePost(new PostData(
+            title: fake()->realText(80),
+            thumbnails: UploadedFile::fake()->image('original.jpg'),
+            categoryId: Category::factory()->create()->id,
+            content: PostContentData::collect([
+                new PostContentData(type: 'text', value: 'Body text for the post here.', order: 1, media: null),
+            ], DataCollection::class),
+            status: PostStatusEnum::PUBLISHED->value,
+        ));
+
+        $oldThumbId = $post->getFirstMedia('post-thumbnails')?->id;
+
+        $updated = $this->postService->updatePost($post, new UpdatePostData(
+            title: $post->title,
+            categoryId: $post->category_id,
+            content: null,
+            status: $post->status->value,
+            thumbnails: UploadedFile::fake()->image('replacement.jpg'),
+        ));
+
+        $newThumb = $updated->getFirstMedia('post-thumbnails');
+        expect($newThumb)->not->toBeNull()
+            ->and($newThumb->id)->not->toBe($oldThumbId);
+    });
+
     it('deletes media records that are removed from the content payload', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $blocks = [
-            new PostContentData('text', 1, fake()->text(), null),
-            new PostContentData('media', 2, null, UploadedFile::fake()->image('gone.jpg')),
-            new PostContentData('text', 3, fake()->text(), null),
+            new PostContentData(type: 'text', value: fake()->text(), order: 1, media: null),
+            new PostContentData(
+                type: 'media',
+                value: null,
+                order: 2,
+                media: new PostContentMediaData(newMedia: UploadedFile::fake()->image('gone.jpg')),
+            ),
+            new PostContentData(type: 'text', value: fake()->text(), order: 3, media: null),
         ];
 
         $post = $this->postService->storePost(new PostData(
@@ -429,13 +482,13 @@ describe('update', function () {
         $keepText2 = $post->content[2];
 
         $incoming = [
-            new UpdatePostContentData(
+            new PostContentData(
                 type: $keepText['type'],
                 value: $keepText['value'],
                 order: 1,
                 media: null,
             ),
-            new UpdatePostContentData(
+            new PostContentData(
                 type: $keepText2['type'],
                 value: $keepText2['value'],
                 order: 2,
@@ -446,7 +499,7 @@ describe('update', function () {
         $update = new UpdatePostData(
             title: fake()->realText(80),
             categoryId: $post->category_id,
-            content: UpdatePostContentData::collect($incoming, DataCollection::class),
+            content: PostContentData::collect($incoming, DataCollection::class),
             status: PostStatusEnum::PUBLISHED->value,
         );
 
@@ -460,7 +513,12 @@ describe('update', function () {
         $this->actingAs($user);
 
         $blocks = [
-            new PostContentData('media', 1, null, UploadedFile::fake()->image('original.jpg')),
+            new PostContentData(
+                type: 'media',
+                value: null,
+                order: 1,
+                media: new PostContentMediaData(newMedia: UploadedFile::fake()->image('original.jpg')),
+            ),
         ];
 
         $post = $this->postService->storePost(new PostData(
@@ -475,7 +533,7 @@ describe('update', function () {
         $oldUrl = $post->content[0]['media']['url'];
 
         $incoming = [
-            new UpdatePostContentData(
+            new PostContentData(
                 type: 'media',
                 value: null,
                 order: 1,
@@ -490,7 +548,7 @@ describe('update', function () {
         $update = new UpdatePostData(
             title: fake()->realText(80),
             categoryId: $post->category_id,
-            content: UpdatePostContentData::collect($incoming, DataCollection::class),
+            content: PostContentData::collect($incoming, DataCollection::class),
             status: PostStatusEnum::PUBLISHED->value,
         );
 
@@ -508,7 +566,12 @@ describe('update', function () {
         $this->actingAs($user);
 
         $blocks = [
-            new PostContentData('media', 1, null, UploadedFile::fake()->image('keep.jpg')),
+            new PostContentData(
+                type: 'media',
+                value: null,
+                order: 1,
+                media: new PostContentMediaData(newMedia: UploadedFile::fake()->image('keep.jpg')),
+            ),
         ];
 
         $post = $this->postService->storePost(new PostData(
@@ -523,7 +586,7 @@ describe('update', function () {
         $mediaUrl = $post->content[0]['media']['url'];
 
         $incoming = [
-            new UpdatePostContentData(
+            new PostContentData(
                 type: 'media',
                 value: null,
                 order: 1,
@@ -537,7 +600,7 @@ describe('update', function () {
         $update = new UpdatePostData(
             title: fake()->realText(80),
             categoryId: $post->category_id,
-            content: UpdatePostContentData::collect($incoming, DataCollection::class),
+            content: PostContentData::collect($incoming, DataCollection::class),
             status: PostStatusEnum::PUBLISHED->value,
         );
 

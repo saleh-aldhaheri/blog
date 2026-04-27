@@ -251,11 +251,11 @@ describe('post store - DTO validation', function () {
             ->and($response->json('data.content'))->toBeArray();
     });
 
-    it('returns 422 with validation errors when title is shorter than 20 characters', function () {
+    it('returns 422 with validation errors when title is shorter than 5 characters', function () {
         $category = Category::factory()->create();
 
         $response = $this->withHeaders(['Accept' => 'application/json'])->post(route('api.user.posts.store'), [
-            'title' => 'short title',
+            'title' => 'ab',
             'categoryId' => $category->id,
             'status' => PostStatusEnum::PUBLISHED->value,
             'thumbnails' => UploadedFile::fake()->image('thumb.jpg'),
@@ -306,12 +306,13 @@ describe('post store - DTO validation', function () {
                     'type' => 'media',
                     'order' => 1,
                     'value' => null,
+                    'media' => [],
                 ],
             ],
         ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['content.0.file']);
+            ->assertJsonValidationErrors(['content.0.media.newMedia']);
     });
 
     it('returns 422 when thumbnails is missing', function () {
@@ -358,11 +359,28 @@ describe('post update - DTO validation', function () {
             ->assertJsonPath('data.category_id', $newCategory->id);
     });
 
-    it('returns 422 when title is present but shorter than 20 characters', function () {
+    it('preserves title and status when they are omitted (only sent fields are updated)', function () {
+        $post = Post::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'This original title is long enough to stay',
+            'status' => PostStatusEnum::PUBLISHED,
+        ]);
+        $newCategory = Category::factory()->create();
+
+        $this->putJson(route('api.user.posts.update', $post), [
+            'categoryId' => $newCategory->id,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.title', 'This original title is long enough to stay')
+            ->assertJsonPath('data.status', 'published')
+            ->assertJsonPath('data.category_id', $newCategory->id);
+    });
+
+    it('returns 422 when title is present but shorter than 5 characters', function () {
         $post = Post::factory()->create(['user_id' => $this->user->id]);
 
         $this->putJson(route('api.user.posts.update', $post), [
-            'title' => 'too short',
+            'title' => 'ab',
             'categoryId' => $post->category_id,
             'content' => null,
         ])->assertUnprocessable()
@@ -396,6 +414,23 @@ describe('post update - DTO validation', function () {
             'categoryId' => $post->category_id,
             'content' => null,
         ])->assertForbidden();
+    });
+
+    it('returns 200 and replaces the thumbnail when thumbnails file is sent', function () {
+        $post = Post::factory()->create(['user_id' => $this->user->id]);
+        $post->addMedia(UploadedFile::fake()->image('old-thumb.jpg'))
+            ->toMediaCollection('post-thumbnails');
+        $oldId = $post->getFirstMedia('post-thumbnails')?->id;
+
+        $this->put(route('api.user.posts.update', $post), [
+            'categoryId' => $post->category_id,
+            'thumbnails' => UploadedFile::fake()->image('new-thumb.jpg'),
+        ], ['Accept' => 'application/json'])
+            ->assertOk()
+            ->assertJsonStructure(['data' => ['thumbnail']]);
+
+        $post->refresh();
+        expect($post->getFirstMedia('post-thumbnails')?->id)->not->toBe($oldId);
     });
 });
 
