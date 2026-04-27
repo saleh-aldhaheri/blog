@@ -9,10 +9,9 @@ use App\Models\User;
 
 class ProfileService
 {
-    public function getProfile(): User
+    public function getProfile(User $user): User
     {
-        return auth()
-            ->user()
+        return $user
             ->loadCount(['posts', 'viewedPosts', 'followers', 'followings'])
             ->load('avatar');
     }
@@ -40,7 +39,7 @@ class ProfileService
         $user->save();
         $user->fresh();
 
-        return $this->getProfile();
+        return $this->getProfile($user);
     }
 
     public function changePassword(User $user, string $plainPassword): void

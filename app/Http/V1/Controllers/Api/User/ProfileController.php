@@ -6,6 +6,7 @@ use App\Data\ChangePasswordData;
 use App\Data\UpdateProfileData;
 use App\Http\V1\Controllers\Api\BaseController;
 use App\Http\V1\Resources\ProfileResource;
+use App\Models\User;
 use App\Services\ProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -27,6 +28,8 @@ class ProfileController extends BaseController
      *
      * @subgroup Profile
      *
+     * @urlParam user integer required The user ID Example: 1
+     *
      * @response 200 scenario=success {
      *   "data": {
      *     "id": 1,
@@ -42,9 +45,9 @@ class ProfileController extends BaseController
      *   }
      * }
      */
-    public function show(): JsonResponse
+    public function show(User $user): JsonResponse
     {
-        $user = $this->profileService->getProfile();
+        $user = $this->profileService->getProfile($user);
 
         return (new ProfileResource($user))->response();
     }

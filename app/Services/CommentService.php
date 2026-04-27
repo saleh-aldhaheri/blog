@@ -19,7 +19,7 @@ class CommentService
                 'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->search($search)
-            ->orderBy('created_at','Desc')
+            ->orderBy('created_at', 'Desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }

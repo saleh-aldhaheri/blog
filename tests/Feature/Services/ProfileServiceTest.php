@@ -30,7 +30,7 @@ describe('getProfile', function () {
         ]);
         $this->user->viewedPosts()->attach($published->id);
 
-        $profile = $this->profileService->getProfile();
+        $profile = $this->profileService->getProfile($this->user);
 
         expect($profile)->toBeInstanceOf(User::class)
             ->and($profile->id)->toBe($this->user->id)

@@ -12,7 +12,7 @@ class ProfileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
@@ -23,6 +23,14 @@ class ProfileResource extends JsonResource
             'followers_count' => (int) ($this->followers_count ?? 0),
             'followings_count' => (int) ($this->followings_count ?? 0),
             'avatar' => $this->getFirstMediaUrl('avatar') ?: null,
+
         ];
+
+        if (auth()->id() !== $this->id) {
+            $data['is_followed'] = $this->followers()->where('follower_id', auth()->id())->exists();
+
+        }
+
+        return $data;
     }
 }

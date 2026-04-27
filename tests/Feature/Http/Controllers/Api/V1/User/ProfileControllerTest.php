@@ -14,7 +14,7 @@ describe('profile with authentication', function () {
 
     describe('profile show', function () {
         it('returns 200 with profile and count attributes', function () {
-            $response = $this->getJson(route('api.user.profile.show'))
+            $response = $this->getJson(route('api.user.profile.show', $this->user->id))
                 ->assertOk();
 
             $data = $response->json('data');
@@ -109,7 +109,8 @@ describe('profile with authentication', function () {
 
 describe('profile without authentication', function () {
     it('returns 401 for profile show', function () {
-        $this->getJson(route('api.user.profile.show'))
+
+        $this->getJson(route('api.user.profile.show', CreateUserAs(RoleEnum::USER)->id))
             ->assertUnauthorized();
     });
 

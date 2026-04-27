@@ -38,7 +38,7 @@ class PostService
                 fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )
             ->search($search)
-            ->orderBy('created_at','Desc')
+            ->orderBy('created_at', 'Desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }
@@ -239,7 +239,7 @@ class PostService
             ->with('comments')
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->search($search)
-            ->orderBy('created_at','Desc')
+            ->orderBy('created_at', 'Desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }
