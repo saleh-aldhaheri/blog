@@ -14,7 +14,7 @@ use Spatie\LaravelData\DataCollection;
 class PostData extends Data
 {
     public function __construct(
-        #[Min(20), Max(255)]
+        #[Min(5), Max(255)]
         public string $title,
 
         public UploadedFile $thumbnails,

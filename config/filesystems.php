@@ -33,7 +33,10 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Must stay false unless this disk uses a dedicated `url` path. When true, Laravel
+            // registers GET /storage/{path} for this disk; unsigned requests 403 because the disk
+            // is non-public — that breaks Spatie/public disk URLs like /storage/{id}/file.jpg.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
