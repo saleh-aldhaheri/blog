@@ -6,6 +6,7 @@ use App\Enums\BusinessExceptionsEnums;
 use App\Enums\RoleEnum;
 use App\Exceptions\BusinessException;
 use App\Http\V1\Controllers\Api\BaseController;
+use App\Http\V1\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -77,7 +78,7 @@ class AuthController extends BaseController
         return response()->json([
             'data' => [
                 'token' => $token->plainTextToken,
-                'user' => $user,
+                'user' => new UserResource($user),
             ],
         ], 200);
     }

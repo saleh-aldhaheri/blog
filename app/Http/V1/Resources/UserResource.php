@@ -19,8 +19,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'role' => $this->role,
-            'avatar' => $this->getFirstMediaUrl('avatar') ?: '',
-            'is_followed' => $this->followers()->where('follower_id', auth()->id())->exists(),
+            'avatar' => $this->getFirstMediaUrl('avatar') ?: ''
         ];
     }
 }
