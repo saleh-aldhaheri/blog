@@ -78,7 +78,7 @@ class AuthController extends BaseController
         return response()->json([
             'data' => [
                 'token' => $token->plainTextToken,
-                'user' => $user,
+                'user' => new UserResource($user),
             ],
         ], 200);
     }
