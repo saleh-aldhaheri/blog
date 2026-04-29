@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\V1\Controllers\Api\Admin\AuthController;
+use App\Http\V1\Controllers\Api\Admin\CategoryController;
 use App\Http\V1\Controllers\Api\Admin\UserController;
 use App\Http\V1\Controllers\Api\Admin\DashboardController;
 use App\Http\V1\Middleware\AdminMiddleware;
@@ -23,3 +24,5 @@ Route::apiResource('/users', UserController::class)
     ->middlewareFor('show', 'can:view,user')
     ->middlewareFor('destroy', 'can:delete,user')
     ->except(['update', 'create']);
+
+Route::apiResource('/categories', CategoryController::class);
