@@ -15,7 +15,7 @@ class DashboardService
 {
     public function __invoke()
     {
-        return  Cache::remember('key', 2 * 60, function () {
+        return  Cache::remember('dashboard', 2 * 60, function () {
             return [
                 'stats' => new StateWidget()->__invoke(),
                 'contents' => [
