@@ -24,12 +24,17 @@ class PostService
         }
 
         return $user->posts()
-            ->with(['category:id,name', 'user:id,name,email,role'])
-            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'category:id,name',
+                'user:id,name,email,role',
+                'user.media',
+                'media',
+            ])
             ->with([
                 'interactions' => fn($q) => $q->where('user_id', auth()->id()),
             ])
-            ->with('comments')
+            ->withCount('comments')
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->when(
                 $status !== null,
                 fn($q) => $q->where('status', $status->value)
@@ -39,7 +44,7 @@ class PostService
                 fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )
             ->search($search)
-            ->orderBy('created_at', 'Desc')
+            ->orderBy('created_at', 'desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }
@@ -48,41 +53,44 @@ class PostService
     {
         return Post::query()
             ->search($search)
-            ->with(['category:id,name', 'user:id,name,email,role'])
+            ->with(['category:id,name', 'user:id,name,email,role', 'user.media'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->withCount('comments')
+            ->with('media')
             ->with([
                 'interactions' => fn($q) => $q->where('user_id', auth()->id()),
             ])->when(
                 auth()->user()->role !== RoleEnum::ADMIN,
                 fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
-            )->orderBy('created_at', 'Desc')
+            )->orderBy('created_at', 'desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }
 
     public function showPost(Post $post): Post
     {
-        $post->load(['category:id,name', 'user:id,name,email,role']);
+        $post->load([
+            'category:id,name',
+            'user:id,name,email,role',
+            'user.media',
+            'media',
+        ]);
+
+        $post->load([
+            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+        ]);
 
         $post->loadCount(array_merge(
             ['comments'],
             InteractionTypeEnum::actionsInteractionsCounts(),
         ));
 
-        $post->load([
-            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
-        ]);
-
-        $post->withCount('comments');
-        $post->withCount(InteractionTypeEnum::actionsInteractionsCounts());
-
         return $post;
     }
 
     public function storePost(PostData $postData)
     {
-        $post = DB::transaction(function () use ($postData): Post {
+        return DB::transaction(function () use ($postData): Post {
 
             $post = Post::create([
                 'title' => $postData->title,
@@ -124,8 +132,6 @@ class PostService
 
             return $post;
         });
-
-        return $post;
     }
 
     public function updatePost(Post $post, UpdatePostData $updatePostData): Post
@@ -241,7 +247,7 @@ class PostService
             ->with('comments')
             ->where('status', PostStatusEnum::PUBLISHED->value)
             ->search($search)
-            ->orderBy('created_at', 'Desc')
+            ->orderBy('created_at', 'desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }
