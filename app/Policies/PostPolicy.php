@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\PostStatusEnum;
-use App\Enums\RoleEnum;
 use App\Models\Post;
 use App\Models\User;
 
@@ -13,8 +12,7 @@ class PostPolicy
     {
         return ($post->status === PostStatusEnum::PUBLISHED &&
             $post->user_id !== $user->id) ||
-            $post->user_id === $user->id ||
-            $user->role === RoleEnum::ADMIN;
+            $post->user_id === $user->id;
     }
 
     /**
@@ -22,8 +20,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        return $user->id === $post->user_id ||
-            $user->role == RoleEnum::ADMIN;
+        return $user->id === $post->user_id;
     }
 
     /**
@@ -31,8 +28,7 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        return $user->id === $post->user_id ||
-            $user->role === RoleEnum::ADMIN;
+        return $user->id === $post->user_id;
     }
 
     public function markAsViewed(User $user, Post $post): bool

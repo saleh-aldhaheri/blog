@@ -16,12 +16,31 @@ class CommentService
             ->with(['user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
             ])
             ->search($search)
             ->orderBy('created_at', 'Desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
+    }
+
+    public function getAllComments(?string $search = '', int $limit = 10)
+    {
+        return Comment::query()
+            ->with(['user:id,name,email,role'])
+            ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
+            ->with([
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])
+            ->search($search)
+            ->orderBy('created_at', 'Desc')
+            ->orderBy('id')
+            ->cursorPaginate($limit);
+    }
+
+    public function getComment(Comment $comment): Comment
+    {
+        return $this->withInteractionPresentation($comment->load('user:id,name,email,role'));
     }
 
     public function storeComment(Post $post, string $content): Comment
@@ -48,7 +67,7 @@ class CommentService
         $comment->loadCount(InteractionTypeEnum::actionsInteractionsCounts());
 
         $comment->load([
-            'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
+            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
         ]);
 
         return $comment;
