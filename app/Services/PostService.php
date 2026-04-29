@@ -6,6 +6,7 @@ use App\Data\PostData;
 use App\Data\UpdatePostData;
 use App\Enums\InteractionTypeEnum;
 use App\Enums\PostStatusEnum;
+use App\Enums\RoleEnum;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Pagination\CursorPaginator;
@@ -26,16 +27,16 @@ class PostService
             ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
             ])
             ->with('comments')
             ->when(
                 $status !== null,
-                fn ($q) => $q->where('status', $status->value)
+                fn($q) => $q->where('status', $status->value)
             )
             ->when(
                 auth()->id() !== $user->id,
-                fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
+                fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )
             ->search($search)
             ->orderBy('created_at', 'Desc')
@@ -51,10 +52,11 @@ class PostService
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->withCount('comments')
             ->with([
-                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
-            ])
-            ->where('status', PostStatusEnum::PUBLISHED->value)
-            ->orderBy('created_at', 'Desc')
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            ])->when(
+                auth()->user()->role !== RoleEnum::ADMIN,
+                fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
+            )->orderBy('created_at', 'Desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
     }
@@ -69,7 +71,7 @@ class PostService
         ));
 
         $post->load([
-            'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
+            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
         ]);
 
         $post->withCount('comments');
@@ -160,7 +162,7 @@ class PostService
 
                 $existingMediaIds
                     ->diff($incomingMediaIds)
-                    ->each(fn ($id) => Media::findOrFail($id)->delete());
+                    ->each(fn($id) => Media::findOrFail($id)->delete());
 
                 $contentArray = [];
 
@@ -234,7 +236,7 @@ class PostService
             ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
             ])
             ->with('comments')
             ->where('status', PostStatusEnum::PUBLISHED->value)
