@@ -78,7 +78,7 @@ describe('comment Show', function () {
             'user_id' => $this->user->id,
         ])->first();
 
-        $this->getJson(route('api.admin.categories.show', $comment->id))
+        $this->getJson(route('api.admin.comments.show', $comment->id))
             ->assertOk();
     });
 });

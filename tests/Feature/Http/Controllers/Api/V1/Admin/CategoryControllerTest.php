@@ -114,7 +114,7 @@ describe('destroy', function () {
             ->assertNoContent();
 
         assertDatabaseMissing('categories', [
-            'category_id' =>  $category->id
+            'id' =>  $category->id
         ]);
     });
 
