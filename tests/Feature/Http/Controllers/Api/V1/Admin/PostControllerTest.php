@@ -42,7 +42,7 @@ describe('index posts', function () {
             'status' => PostStatusEnum::DRAFT,
         ]);
 
-        $response = $this->getJson(route('api.admin.posts.index',  ['limit' => $limit]))
+        $response = $this->getJson(route('api.admin.posts.index', ['limit' => $limit]))
             ->assertStatus(200);
 
         expect($response->json('data'))->toHaveCount($limit);
@@ -165,8 +165,8 @@ describe('delete post', function () {
 
         $this->deleteJson(route('api.admin.posts.destroy', $post->id));
 
-        assertDatabaseMissing('posts',  [
-            'id' => $post->id
+        assertDatabaseMissing('posts', [
+            'id' => $post->id,
         ]);
     });
 });

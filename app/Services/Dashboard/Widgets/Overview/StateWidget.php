@@ -11,11 +11,11 @@ class StateWidget
 {
     public function __invoke()
     {
-        return  [
+        return [
             'users' => User::count(),
             'posts' => Post::count(),
             'comments' => Comment::count(),
-            'interactions' => Interaction::count()
+            'interactions' => Interaction::count(),
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Data\UpdatePostData;
 use App\Enums\InteractionTypeEnum;
 use App\Enums\PostStatusEnum;
 use App\Enums\RoleEnum;
+use App\Jobs\DistributePostCreatedNotificationJob;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Pagination\CursorPaginator;
@@ -31,17 +32,17 @@ class PostService
                 'media',
             ])
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->withCount('comments')
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->when(
                 $status !== null,
-                fn($q) => $q->where('status', $status->value)
+                fn ($q) => $q->where('status', $status->value)
             )
             ->when(
                 auth()->id() !== $user->id,
-                fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
+                fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )
             ->search($search)
             ->orderBy('created_at', 'desc')
@@ -58,10 +59,10 @@ class PostService
             ->withCount('comments')
             ->with('media')
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])->when(
                 auth()->user()->role !== RoleEnum::ADMIN,
-                fn($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
+                fn ($q) => $q->where('status', PostStatusEnum::PUBLISHED->value)
             )->orderBy('created_at', 'desc')
             ->orderBy('id')
             ->cursorPaginate($limit);
@@ -77,7 +78,7 @@ class PostService
         ]);
 
         $post->load([
-            'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+            'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
         ]);
 
         $post->loadCount(array_merge(
@@ -90,7 +91,7 @@ class PostService
 
     public function storePost(PostData $postData)
     {
-        return DB::transaction(function () use ($postData): Post {
+        $post = DB::transaction(function () use ($postData): Post {
 
             $post = Post::create([
                 'title' => $postData->title,
@@ -132,6 +133,10 @@ class PostService
 
             return $post;
         });
+
+        DistributePostCreatedNotificationJob::dispatch(auth()->user(), $post);
+
+        return $post;
     }
 
     public function updatePost(Post $post, UpdatePostData $updatePostData): Post
@@ -168,7 +173,7 @@ class PostService
 
                 $existingMediaIds
                     ->diff($incomingMediaIds)
-                    ->each(fn($id) => Media::findOrFail($id)->delete());
+                    ->each(fn ($id) => Media::findOrFail($id)->delete());
 
                 $contentArray = [];
 
@@ -242,7 +247,7 @@ class PostService
             ->with(['category:id,name', 'user:id,name,email,role'])
             ->withCount(InteractionTypeEnum::actionsInteractionsCounts())
             ->with([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ])
             ->with('comments')
             ->where('status', PostStatusEnum::PUBLISHED->value)

@@ -7,7 +7,6 @@ use App\Models\User;
 
 class RecentUsersWidget
 {
-
     public function __invoke()
     {
         return User::orderBy('created_at', 'desc')

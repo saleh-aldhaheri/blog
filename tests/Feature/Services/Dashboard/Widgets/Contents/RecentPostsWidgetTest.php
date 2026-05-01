@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Post;
-use App\Models\User;
 use App\Models\Comment;
 use App\Models\Interaction;
+use App\Models\Post;
+use App\Models\User;
 use App\Services\Dashboard\Widgets\Contents\RecentPostsWidget;
 
 it('returns recent posts with relations and counts', function () {
@@ -12,7 +12,7 @@ it('returns recent posts with relations and counts', function () {
 
     $posts = Post::factory()
         ->count(12)
-        ->sequence(fn($sequence) => [
+        ->sequence(fn ($sequence) => [
             'user_id' => $user->id,
             'created_at' => now()->subMinutes(12 - $sequence->index),
         ])

@@ -6,7 +6,6 @@ use Laravel\Sanctum\Sanctum;
 
 use function Pest\Laravel\assertDatabaseMissing;
 
-
 beforeEach(function () {
     $this->admin = CreateUserAs(RoleEnum::ADMIN);
     $this->user = CreateUserAs(RoleEnum::USER);
@@ -50,7 +49,7 @@ describe('comment index', function () {
             'content' => "Contains {$needle} here",
         ]);
 
-        $url = route('api.admin.comments.index') . '?search=' . urlencode($needle);
+        $url = route('api.admin.comments.index').'?search='.urlencode($needle);
 
         $response = $this->getJson($url)->assertOk();
 
@@ -64,7 +63,7 @@ describe('comment index', function () {
             'user_id' => $this->user->id,
         ]);
 
-        $url = route('api.admin.comments.index') . '?limit=3';
+        $url = route('api.admin.comments.index').'?limit=3';
 
         $response = $this->getJson($url)->assertOk();
 

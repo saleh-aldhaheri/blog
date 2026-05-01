@@ -3,9 +3,9 @@
 use App\Http\V1\Controllers\Api\Admin\AuthController;
 use App\Http\V1\Controllers\Api\Admin\CategoryController;
 use App\Http\V1\Controllers\Api\Admin\CommentController;
+use App\Http\V1\Controllers\Api\Admin\DashboardController;
 use App\Http\V1\Controllers\Api\Admin\UserController;
 use App\Http\V1\Controllers\Api\User\PostController;
-use App\Http\V1\Controllers\Api\Admin\DashboardController;
 use App\Http\V1\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 

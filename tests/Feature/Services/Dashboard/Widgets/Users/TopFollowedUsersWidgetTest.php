@@ -19,7 +19,6 @@ it('returns users ordered by most followings', function () {
 
     $userB->followings()->attach($followers[3]->id);
 
-
     $result = app(TopFollowedUsersWidget::class)();
 
     expect($result[0]['id'])->toBe($userA->id);

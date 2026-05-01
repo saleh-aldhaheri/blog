@@ -4,7 +4,6 @@ use App\Enums\RoleEnum;
 use App\Models\User;
 use App\Services\Dashboard\Widgets\Users\RecentUsersWidget;
 
-
 it('returns recent non-admin users ordered by latest', function () {
 
     User::factory()->create([
@@ -14,7 +13,7 @@ it('returns recent non-admin users ordered by latest', function () {
 
     $users = User::factory()
         ->count(5)
-        ->sequence(fn($seq) => [
+        ->sequence(fn ($seq) => [
             'role' => RoleEnum::USER->value,
             'created_at' => now()->subMinutes(5 - $seq->index),
         ])

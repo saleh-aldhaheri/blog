@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Category;
 use App\Enums\RoleEnum;
+use App\Models\Category;
 use App\Models\Post;
 use Laravel\Sanctum\Sanctum;
 
@@ -114,7 +114,7 @@ describe('destroy', function () {
             ->assertNoContent();
 
         assertDatabaseMissing('categories', [
-            'id' =>  $category->id
+            'id' => $category->id,
         ]);
     });
 
@@ -123,7 +123,7 @@ describe('destroy', function () {
         $category = Category::factory()->create();
 
         Post::factory(1)->create([
-            'category_id' => $category->id
+            'category_id' => $category->id,
         ]);
 
         $this->deleteJson(
@@ -132,7 +132,7 @@ describe('destroy', function () {
             ->assertStatus(422);
 
         assertDatabaseHas('categories', [
-            'id' => $category->id
+            'id' => $category->id,
         ]);
     });
 });

@@ -11,7 +11,7 @@ class PostsGrowthChartWidget
     {
         return Post::select([
             DB::raw('count(*) as total'),
-            DB::raw('DATE(created_at) as date')
+            DB::raw('DATE(created_at) as date'),
         ])
             ->groupBy('date')
             ->orderBy('date')

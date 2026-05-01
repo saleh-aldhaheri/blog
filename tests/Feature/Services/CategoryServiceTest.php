@@ -24,11 +24,11 @@ describe('getCategory', function () {
 
     it('should search category by Name', function () {
 
-        category::factory(20)->create();
+        Category::factory(20)->create();
 
         $name = 'uniqid name';
 
-        category::factory(1)->create([
+        Category::factory(1)->create([
             'name' => $name,
         ]);
 
@@ -68,7 +68,6 @@ describe('updateComment', function () {
     });
 });
 
-
 describe('delete category', function () {
     it('should delete the category', function () {
         $category = Category::factory(1)->create([
@@ -77,8 +76,8 @@ describe('delete category', function () {
 
         $this->categoryService->deleteCategory($category);
 
-        assertDatabaseMissing('categories',  [
-            'id' => $category->id
+        assertDatabaseMissing('categories', [
+            'id' => $category->id,
         ]);
     });
 });

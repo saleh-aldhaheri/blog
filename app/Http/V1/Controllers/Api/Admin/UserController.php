@@ -85,7 +85,6 @@ class UserController extends BaseController
      *     "created_at": "2026-01-01T00:00:00+00:00"
      *   }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\User] 99"
      * }
@@ -109,7 +108,6 @@ class UserController extends BaseController
      * @urlParam user integer required The ID of the user to delete. Example: 1
      *
      * @response 204 scenario=success {}
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\User] 99"
      * }

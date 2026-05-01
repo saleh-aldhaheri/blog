@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
-use App\Models\Post;
 use App\Models\Comment;
 use App\Models\Interaction;
+use App\Models\Post;
+use App\Models\User;
 use App\Services\Dashboard\DashboardService;
 
 it('returns full dashboard structure with all widgets', function () {
@@ -18,7 +18,6 @@ it('returns full dashboard structure with all widgets', function () {
         'post_id' => $posts[0]->id,
         'user_id' => $users[0]->id,
     ]);
-
 
     Interaction::factory(1)->create([
         'user_id' => $users[0]->id,

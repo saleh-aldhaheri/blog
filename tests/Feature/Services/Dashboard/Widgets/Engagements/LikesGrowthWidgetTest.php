@@ -1,11 +1,10 @@
 <?php
 
 use App\Enums\InteractionTypeEnum;
-use App\Models\User;
-use App\Models\Post;
 use App\Models\Interaction;
+use App\Models\Post;
+use App\Models\User;
 use App\Services\Dashboard\Widgets\Engagements\LikesGrowthWidget;
-
 
 it('returns likes growth grouped by action and date', function () {
 
@@ -50,7 +49,7 @@ it('returns likes growth grouped by action and date', function () {
             'total',
         ]);
 
-    $mapped = collect($result)->map(fn($item) => [
+    $mapped = collect($result)->map(fn ($item) => [
         'action' => $item['action'],
         'date' => $item['date'],
         'total' => $item['total'],

@@ -22,7 +22,7 @@ class CommentResource extends JsonResource
             'user_id' => $this->user_id,
             'user' => UserResource::make($this->user),
             'interaction_counts' => collect(InteractionTypeEnum::cases())
-                ->mapWithKeys(fn(InteractionTypeEnum $action) => [
+                ->mapWithKeys(fn (InteractionTypeEnum $action) => [
                     $action->value => (int) ($this->{"{$action->value}_count"} ?? 0),
                 ])
                 ->all(),
@@ -39,17 +39,17 @@ class CommentResource extends JsonResource
         $comment = $this->resource;
 
         $comment->loadMissing([
-            'user' => fn($q) => $q->select('id', 'name', 'email', 'role'),
+            'user' => fn ($q) => $q->select('id', 'name', 'email', 'role'),
         ]);
 
         if (! $comment->relationLoaded('interactions')) {
             $comment->load([
-                'interactions' => fn($q) => $q->where('user_id', auth()->id()),
+                'interactions' => fn ($q) => $q->where('user_id', auth()->id()),
             ]);
         }
 
         $hasAllInteractionCounts = collect(InteractionTypeEnum::cases())
-            ->every(fn(InteractionTypeEnum $action) => array_key_exists(
+            ->every(fn (InteractionTypeEnum $action) => array_key_exists(
                 "{$action->value}_count",
                 $comment->getAttributes()
             ));

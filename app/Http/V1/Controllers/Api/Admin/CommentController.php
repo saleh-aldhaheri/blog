@@ -83,7 +83,6 @@ class CommentController extends BaseController
      *     "updated_at": "2026-01-15T12:00:00+00:00"
      *   }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Comment] 99"
      * }
@@ -119,12 +118,10 @@ class CommentController extends BaseController
      *     "updated_at": "2026-01-15T12:15:00+00:00"
      *   }
      * }
-     *
      * @response 422 scenario="validation error" {
      *   "message": "The comment must be at least 2 characters.",
      *   "errors": { "comment": ["The comment must be at least 2 characters."] }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Comment] 99"
      * }
@@ -154,7 +151,6 @@ class CommentController extends BaseController
      * @urlParam comment integer required The ID of the comment to delete. Example: 1
      *
      * @response 204 scenario=success {}
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Comment] 99"
      * }

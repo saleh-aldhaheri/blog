@@ -3,7 +3,6 @@
 use App\Models\Post;
 use App\Services\Dashboard\Widgets\Analytics\PostsGrowthChartWidget;
 
-
 it('returns posts growth grouped by date', function () {
 
     Post::factory()->count(2)->create([

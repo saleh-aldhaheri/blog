@@ -96,7 +96,6 @@ class PostController extends BaseController
      *     "updated_at": "2026-01-15T12:00:00+00:00"
      *   }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Post] 99"
      * }
@@ -158,12 +157,10 @@ class PostController extends BaseController
      *     "updated_at": "2026-01-15T12:15:00+00:00"
      *   }
      * }
-     *
      * @response 422 scenario="validation error" {
      *   "message": "The title field must be at least 5 characters.",
      *   "errors": { "title": ["The title field must be at least 5 characters."] }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Post] 99"
      * }
@@ -188,7 +185,6 @@ class PostController extends BaseController
      * @urlParam post integer required The ID of the post to delete. Example: 1
      *
      * @response 204 scenario=success {}
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Post] 99"
      * }

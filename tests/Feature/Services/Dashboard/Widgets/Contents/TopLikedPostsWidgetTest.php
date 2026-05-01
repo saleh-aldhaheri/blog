@@ -1,8 +1,8 @@
 <?php
 
+use App\Models\Interaction;
 use App\Models\Post;
 use App\Models\User;
-use App\Models\Interaction;
 use App\Services\Dashboard\Widgets\Contents\TopLikedPostsWidget;
 
 it('returns top liked posts ordered by interactions count', function () {

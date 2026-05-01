@@ -63,7 +63,6 @@ class CategoryController extends BaseController
      *     "name": "Technology"
      *   }
      * }
-     *
      * @response 422 scenario="validation error" {
      *   "message": "The name has already been taken.",
      *   "errors": {
@@ -99,7 +98,6 @@ class CategoryController extends BaseController
      *     "name": "Tech"
      *   }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Category] 99"
      * }
@@ -128,14 +126,12 @@ class CategoryController extends BaseController
      *     "name": "Science"
      *   }
      * }
-     *
      * @response 422 scenario="validation error" {
      *   "message": "The name has already been taken.",
      *   "errors": {
      *     "name": ["The name has already been taken."]
      *   }
      * }
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Category] 99"
      * }
@@ -169,7 +165,6 @@ class CategoryController extends BaseController
      * @urlParam category int required The ID of the category to delete. Example: 1
      *
      * @response 204 scenario=success {}
-     *
      * @response 404 scenario="not found" {
      *   "message": "No query results for model [App\\Models\\Category] 99"
      * }

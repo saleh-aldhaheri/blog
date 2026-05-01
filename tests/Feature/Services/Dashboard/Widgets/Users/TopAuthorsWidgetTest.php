@@ -2,8 +2,8 @@
 
 use App\Enums\PostStatusEnum;
 use App\Enums\RoleEnum;
-use App\Models\User;
 use App\Models\Post;
+use App\Models\User;
 use App\Services\Dashboard\Widgets\Users\TopAuthorsWidget;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

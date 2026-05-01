@@ -15,18 +15,18 @@ class DashboardService
 {
     public function __invoke()
     {
-        return  Cache::remember('dashboard', 2 * 60, function () {
+        return Cache::remember('dashboard', 2 * 60, function () {
             return [
                 'stats' => new StateWidget()->__invoke(),
                 'contents' => [
-                    'post_per_category' =>  new PostsPerCategoryWidget()->__invoke(),
+                    'post_per_category' => new PostsPerCategoryWidget()->__invoke(),
                     'recent_posts' => new RecentPostsWidget()->__invoke(),
-                    'top_liked_posts' => new TopLikedPostsWidget()->__invoke()
+                    'top_liked_posts' => new TopLikedPostsWidget()->__invoke(),
                 ],
                 'engagements' => new LikesGrowthWidget()->__invoke(),
                 'analytics' => [
-                    'user_growth' =>  new UsersGrowthChartWidget()->__invoke(),
-                    'post_growth' => new PostsGrowthChartWidget()->__invoke()
+                    'user_growth' => new UsersGrowthChartWidget()->__invoke(),
+                    'post_growth' => new PostsGrowthChartWidget()->__invoke(),
                 ],
             ];
         });
