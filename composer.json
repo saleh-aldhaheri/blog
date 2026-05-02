@@ -12,6 +12,7 @@
         "php": "^8.3",
         "laravel/framework": "^13.0",
         "laravel/octane": "^2.17",
+        "laravel/reverb": "^1.0",
         "laravel/sanctum": "*",
         "laravel/telescope": "^5.20",
         "laravel/tinker": "^3.0",
