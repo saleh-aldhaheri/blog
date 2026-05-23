@@ -1,0 +1,94 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: blog_app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - app_code:/var/www
+    networks:
+      - blog_net
+    mem_limit: 512m
+    cpus: "1.0"
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8
+    container_name: blog_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=blog_system
+      - MYSQL_USER=saleh
+      - MYSQL_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=TCP -usaleh -ppassword"]
+      interval: 5s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - blog_app_db_data:/var/lib/mysql
+    networks:
+      - blog_net
+    mem_limit: 512m
+    cpus: "0.8"
+    restart: unless-stopped
+
+  blog_web_server:
+    container_name: blog_nginx
+    build:
+        context: .
+        dockerfile: Dockerfile.nginx
+    ports:
+        - "8080:80"
+    depends_on:
+        - app
+    volumes:
+        - app_code:/var/www
+    networks:
+        - blog_net
+    mem_limit: 200m
+    cpus: "0.5"
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: blog_redis
+    command: ["redis-server", "--requirepass", "password"]
+    restart: unless-stopped
+    networks:
+      - blog_net
+    mem_limit: 256m
+    cpus: "0.5"
+
+  reverb:
+    build:
+      context: .
+    container_name: blog_reverb
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8081:8080"
+    volumes:
+      - app_code:/var/www
+    networks:
+      - blog_net
+    mem_limit: 256m
+    cpus: "0.5"
+    restart: unless-stopped
+
+volumes:
+  blog_app_db_data:
+  app_code:
+
+networks:
+  blog_net:
+    driver: bridge

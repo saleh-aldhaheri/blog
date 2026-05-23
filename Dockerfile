@@ -1,29 +1,35 @@
 FROM php:8.4-fpm
 
+WORKDIR /var/www
+
+COPY . /var/www/
+
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-zip \
+    zip \
     libzip-dev \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype-dev \
     libonig-dev \
     libxml2-dev
+
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
     mbstring \
     bcmath \
-    zip
+    zip \
+    exif \
+    gd
 
-COPY  --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY docker/laravel-fpm-entrypoint.sh /usr/local/bin/laravel-fpm-entrypoint.sh
-RUN chmod +x /usr/local/bin/laravel-fpm-entrypoint.sh
+RUN composer install
 
-WORKDIR /var/www
+RUN chmod +x ./scripts/entrypoint.sh
 
-EXPOSE 9000
-
-ENTRYPOINT ["/usr/local/bin/laravel-fpm-entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["./scripts/entrypoint.sh"]
