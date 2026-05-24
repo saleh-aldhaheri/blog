@@ -1,23 +1,23 @@
 services:
   app:
     build:
-      context: .
+        context: .
+        dockerfile: Dockerfile
     container_name: blog_app
+    volumes:
+        - app_code:/var/www
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_started
-    volumes:
-      - app_code:/var/www
     networks:
       - blog_net
-    mem_limit: 512m
-    cpus: "1.0"
-    restart: unless-stopped
+    ports:
+      - "9991:8080" #expose reverb connection websocket
 
   mysql:
-    image: mysql:8
+    image: mysql:latest
     container_name: blog_db
     environment:
       - MYSQL_ROOT_PASSWORD=password
@@ -34,9 +34,6 @@ services:
       - blog_app_db_data:/var/lib/mysql
     networks:
       - blog_net
-    mem_limit: 512m
-    cpus: "0.8"
-    restart: unless-stopped
 
   blog_web_server:
     container_name: blog_nginx
@@ -44,16 +41,13 @@ services:
         context: .
         dockerfile: Dockerfile.nginx
     ports:
-        - "8080:80"
+        - "9999:80"
     depends_on:
         - app
     volumes:
         - app_code:/var/www
     networks:
         - blog_net
-    mem_limit: 200m
-    cpus: "0.5"
-    restart: unless-stopped
 
   redis:
     image: redis:alpine
@@ -62,28 +56,6 @@ services:
     restart: unless-stopped
     networks:
       - blog_net
-    mem_limit: 256m
-    cpus: "0.5"
-
-  reverb:
-    build:
-      context: .
-    container_name: blog_reverb
-    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    ports:
-      - "8081:8080"
-    volumes:
-      - app_code:/var/www
-    networks:
-      - blog_net
-    mem_limit: 256m
-    cpus: "0.5"
-    restart: unless-stopped
 
 volumes:
   blog_app_db_data:

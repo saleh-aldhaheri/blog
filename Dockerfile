@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype-dev \
     libonig-dev \
-    libxml2-dev
+    libxml2-dev \
+    default-mysql-client
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
@@ -25,6 +26,10 @@ RUN docker-php-ext-install \
     zip \
     exif \
     gd
+
+RUN pecl install redis && docker-php-ext-enable redis
+
+RUN printf '[client]\nssl-verify-server-cert=0\n' > /etc/my.cnf
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
