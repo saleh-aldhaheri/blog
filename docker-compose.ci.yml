@@ -3,7 +3,7 @@ services:
     container_name: blog_app_testing
     build:
       context: .
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     environment:
       - DB_CONNECTION=${DB_CONNECTION}
       - DB_HOST=${DB_HOST}
