@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: blog_app
+    container_name: blog_app_testing
     build:
       context: .
       dockerfile: dockerfile
@@ -20,7 +20,7 @@ services:
     networks:
       - blog-testing
   db:
-    container_name: mysql
+    container_name: blog_db_testing
     image: mysql:latest
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD_ROOT}
