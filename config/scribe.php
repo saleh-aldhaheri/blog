@@ -11,7 +11,7 @@ use function Knuckles\Scribe\Config\removeStrategies;
 
 return [
     // The HTML <title> for the generated documentation.
-    'title' => config('app.name').' API Documentation',
+    'title' => config('app.name') . ' API Documentation',
 
     // A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
     'description' => '',
@@ -122,9 +122,9 @@ return [
     'auth' => [
         'enabled' => true,
         'default' => true,
-        'in' => AuthIn::BEARER->value,
+        'in' => 'bearer',
         'name' => 'Authorization',
-        'use_value' => env('SCRIBE_AUTH_KEY'),
+        'use_value' => env('SCRIBE_AUTH_KEY', ''),
         'placeholder' => '{ACCESS_TOKEN}',
         'extra_info' => <<<'HTML'
                     Send <code>Authorization: Bearer {token}</code>. User tokens come from <code>POST /api/v1/login</code>; admin tokens from <code>POST /api/v1/admin/login</code>.

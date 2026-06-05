@@ -36,7 +36,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install \
     --no-dev \
     --no-interaction \
-    --optimize-autoloader
+    --optimize-autoloader \
+    && composer clear-cache \
+    && php artisan package:discover --ansi
 
 RUN chmod +x ./scripts/entrypoint.sh
 
