@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.5-fpm
 
 WORKDIR /var/www
 
@@ -33,7 +33,10 @@ RUN printf '[client]\nssl-verify-server-cert=0\n' > /etc/my.cnf
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --optimize-autoloader
 
 RUN chmod +x ./scripts/entrypoint.sh
 
