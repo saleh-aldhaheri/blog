@@ -1,0 +1,46 @@
+name: Quality Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  QA:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: copy env
+        run: cp .env.example .env
+
+      - name: run containers
+        run: docker compose -f docker-compose.ci.yml up -d
+        env:
+          DB_CONNECTION: ${{ secrets.QA_DB_CONNECTION }}
+          DB_HOST: ${{ secrets.QA_DB_HOST }}
+          DB_PORT: ${{ secrets.QA_DB_PORT }}
+          DB_DATABASE: ${{ secrets.QA_DB_DATABASE }}
+          DB_USERNAME_ROOT: ${{ secrets.QA_DB_USERNAME_ROOT }}
+          DB_PASSWORD_ROOT: ${{ secrets.QA_DB_PASSWORD_ROOT }}
+
+      - name: generate app key
+        run:  docker exec blog_app_testing php artisan key:generate
+
+      - name: install dependencies
+        run: docker exec blog_app_testing composer install
+
+      - name: install and enable xdebug
+        run: |
+          docker exec blog_app_testing pecl install xdebug
+          docker exec blog_app_testing docker-php-ext-enable xdebug
+
+      - name: run tests and coverage
+        run: docker exec -e XDEBUG_MODE=coverage blog_app_testing php artisan test --parallel --coverage
+
+      - name: run static analysis
+        run:  docker exec blog_app_testing ./vendor/bin/phpstan analyse -l 6 app
