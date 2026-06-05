@@ -8,7 +8,9 @@ use App\Http\V1\Controllers\Api\User\FollowController;
 use App\Http\V1\Controllers\Api\User\PostController;
 use App\Http\V1\Controllers\Api\User\PostInteractionController;
 use App\Http\V1\Controllers\Api\User\ProfileController;
+use App\Http\V1\Controllers\Api\User\UserController;
 use App\Http\V1\Middleware\UserMiddleware;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 // public routes
@@ -58,3 +60,12 @@ Route::prefix('follow')->as('follow.')->group(function () {
 });
 
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
+
+Route::prefix('/users/notifications')->as('notifications')->group(function () {
+    Route::get('/', [UserController::class, 'getNotifications']);
+    Route::put('/{notification}', [UserController::class, 'updateFollowingNotification'])
+        ->middleware('can:update-notification,notification')
+        ->name('.update');
+});
+
+Broadcast::routes();

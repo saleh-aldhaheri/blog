@@ -34,6 +34,6 @@ class BaseController extends Controller
 
         $search = trim($search);
 
-        return $search === '' ? null : $search;
+        return $search === '' ? '' : $search;
     }
 }

@@ -32,7 +32,7 @@ describe('getUserPosts', function () {
 
         $result = $this->postService->getUserPosts($user);
 
-        expect($result->items())->toHaveCount(10)  // ✅ items() gets the actual records
+        expect($result->items())->toHaveCount(10)
             ->and(collect($result->items())->pluck('id'))
             ->toEqual($posts->pluck('id'));
     });

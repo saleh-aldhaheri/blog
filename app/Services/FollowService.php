@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\BusinessExceptionsEnums;
 use App\Exceptions\BusinessException;
 use App\Models\User;
+use App\Notifications\NewFollowerNotification;
 use Illuminate\Pagination\CursorPaginator;
 
 class FollowService
@@ -36,6 +37,8 @@ class FollowService
         }
 
         $auth->followings()->syncWithoutDetaching([$user->id]);
+
+        $user->notify(new NewFollowerNotification($auth));
     }
 
     public function unfollow(User $user): void

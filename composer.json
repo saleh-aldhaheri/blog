@@ -12,6 +12,7 @@
         "php": "^8.3",
         "laravel/framework": "^13.0",
         "laravel/octane": "^2.17",
+        "laravel/reverb": "^1.0",
         "laravel/sanctum": "*",
         "laravel/telescope": "^5.20",
         "laravel/tinker": "^3.0",
@@ -22,6 +23,7 @@
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.23",
+        "fruitcake/laravel-debugbar": "^4.2",
         "knuckleswtf/scribe": "^5.9",
         "laravel/pail": "^1.2.5",
         "laravel/pint": "^1.27",
@@ -53,6 +55,7 @@
             "npm install --ignore-scripts",
             "npm run build"
         ],
+        "format":  "./vendor/bin/pint",
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
