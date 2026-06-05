@@ -35,11 +35,13 @@ services:
     networks:
       -  blog-testing
 
-  volumes:
-    - public
-    - storage
-  networks:
-    - blog-testing
+volumes:
+  db:
+  storage:
+  public:
+
+networks:
+  blog-testing:
 
 
 
