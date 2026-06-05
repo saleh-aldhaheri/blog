@@ -29,6 +29,9 @@ RUN docker-php-ext-install \
 
 RUN pecl install redis && docker-php-ext-enable redis
 
+#limit php process memory usage to host memory
+RUN echo "memory_limit=-1" > /usr/local/etc/php/conf.d/zz-memory-limit.ini
+
 RUN printf '[client]\nssl-verify-server-cert=0\n' > /etc/my.cnf
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
