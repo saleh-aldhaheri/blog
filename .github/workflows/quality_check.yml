@@ -34,13 +34,8 @@ jobs:
       - name: install dependencies
         run: docker exec blog_app_testing composer install
 
-      - name: install and enable xdebug
-        run: |
-          docker exec blog_app_testing pecl install xdebug
-          docker exec blog_app_testing docker-php-ext-enable xdebug
-
-      - name: run tests and coverage
-        run: docker exec -e XDEBUG_MODE=coverage blog_app_testing php artisan test --parallel --coverage
+      - name: run tests
+        run: docker exec blog_app_testing php artisan test --parallel
 
       - name: run static analysis
         run:  docker exec blog_app_testing ./vendor/bin/phpstan analyse -l 6 app
