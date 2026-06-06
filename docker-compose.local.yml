@@ -1,0 +1,91 @@
+services:
+  app:
+    container_name: blog_application_staging
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: blog-app:staging
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - public:/var/www/public:rw
+      - storage:/var/www/storage:rw
+    networks:
+      - blog_net
+
+  reverb:
+    container_name: blog_websocket_staging
+    image: blog-app:staging
+    # Reverb needs ext-pcntl (SIGINT/SIGTERM signal handling) which the image
+    command: sh -c "docker-php-ext-install pcntl && php artisan reverb:start --host=0.0.0.0 --port=8080"
+    env_file:
+      - .env
+    depends_on:
+      app:
+        condition: service_started
+      redis:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      - blog_net
+
+  nginx:
+    container_name: blog_nginx_staging
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    env_file:
+      - .env
+    environment:
+      - NGINX_HOST=${NGINX_HOST:-localhost}
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template
+      - public:/var/www/public:ro
+      - storage:/var/www/storage:ro
+    depends_on:
+      - app
+    networks:
+      - blog_net
+
+  mysql:
+    container_name: blog_db_staging
+    image: mysql:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD_ROOT}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=TCP -u${DB_USERNAME} -p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - blog_net
+
+  redis:
+    container_name: blog_cache_staging
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - blog_net
+
+networks:
+  blog_net:
+
+volumes:
+  db:
+  storage:
+  public:
