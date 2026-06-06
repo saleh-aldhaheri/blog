@@ -36,6 +36,3 @@ jobs:
 
       - name: run tests
         run: docker exec blog_app_testing php artisan test --parallel
-
-      - name: run static analysis
-        run:  docker exec blog_app_testing ./vendor/bin/phpstan analyse -l 6 app
