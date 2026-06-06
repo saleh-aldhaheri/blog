@@ -1,7 +1,8 @@
-name: STAGING
+name: Staging
 on:
   issue_comment:
     types: [created]
+  workflow_dispatch:   
 
 jobs:
   build-push-image:
