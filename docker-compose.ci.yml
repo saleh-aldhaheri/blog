@@ -1,0 +1,47 @@
+services:
+  app:
+    container_name: blog_app_testing
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME_ROOT}
+      - DB_PASSWORD=${DB_PASSWORD_ROOT}
+    volumes:
+      - public:/my-app/public:rw
+      - storage:/my-app/storage:rw
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - blog-testing
+  db:
+    container_name: blog_db_testing
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD_ROOT}
+      - MYSQL_DATABASE=${DB_DATABASE}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=TCP -uroot -p${DB_PASSWORD_ROOT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      -  blog-testing
+
+volumes:
+  db:
+  storage:
+  public:
+
+networks:
+  blog-testing:
+
+
+

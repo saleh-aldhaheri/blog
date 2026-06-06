@@ -1,4 +1,8 @@
-FROM php:8.4-fpm
+FROM php:8.5-fpm
+
+WORKDIR /var/www/blog
+
+COPY . /var/www/blog
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -6,24 +10,39 @@ RUN apt-get update && apt-get install -y \
 zip \
     libzip-dev \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype-dev \
     libonig-dev \
-    libxml2-dev
+    libxml2-dev \
+    default-mysql-client
+
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
     mbstring \
     bcmath \
-    zip
+    zip \
+    exif \
+    gd
 
-COPY  --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN pecl install redis && docker-php-ext-enable redis
 
-COPY docker/laravel-fpm-entrypoint.sh /usr/local/bin/laravel-fpm-entrypoint.sh
-RUN chmod +x /usr/local/bin/laravel-fpm-entrypoint.sh
+#limit php process memory usage to 512M
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/zz-memory-limit.ini
 
-WORKDIR /var/www
+RUN printf '[client]\nssl-verify-server-cert=0\n' > /etc/my.cnf
 
-EXPOSE 9000
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-ENTRYPOINT ["/usr/local/bin/laravel-fpm-entrypoint.sh"]
-CMD ["php-fpm"]
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --optimize-autoloader \
+    && composer clear-cache \
+    && php artisan package:discover --ansi
+
+RUN chmod +x ./scripts/entrypoint.sh
+
+CMD ["./scripts/entrypoint.sh"]

@@ -1,11 +1,17 @@
 <?php
 
-use Knuckles\Scribe\Config\AuthIn;
 use Knuckles\Scribe\Config\Defaults;
 use Knuckles\Scribe\Extracting\Strategies;
 
 use function Knuckles\Scribe\Config\configureStrategy;
 use function Knuckles\Scribe\Config\removeStrategies;
+
+// Scribe is a dev-only dependency. In production builds (`composer install --no-dev`)
+// its classes are not installed, so package discovery / config caching would fatal
+// when loading this file. Bail out with an empty config in that case.
+if (! class_exists(Defaults::class)) {
+    return [];
+}
 
 // Only the most common configs are shown. See the https://scribe.knuckles.wtf/laravel/reference/config for all.
 
@@ -122,9 +128,9 @@ return [
     'auth' => [
         'enabled' => true,
         'default' => true,
-        'in' => AuthIn::BEARER->value,
+        'in' => 'bearer',
         'name' => 'Authorization',
-        'use_value' => env('SCRIBE_AUTH_KEY'),
+        'use_value' => env('SCRIBE_AUTH_KEY', ''),
         'placeholder' => '{ACCESS_TOKEN}',
         'extra_info' => <<<'HTML'
                     Send <code>Authorization: Bearer {token}</code>. User tokens come from <code>POST /api/v1/login</code>; admin tokens from <code>POST /api/v1/admin/login</code>.

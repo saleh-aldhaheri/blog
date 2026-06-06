@@ -1,0 +1,66 @@
+services:
+  app:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    container_name: blog_app
+    volumes:
+        - app_code:/var/www/blog
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - blog_net
+    ports:
+      - "9991:8080" #expose reverb connection websocket
+
+  mysql:
+    image: mysql:latest
+    container_name: blog_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=blog_system
+      - MYSQL_USER=saleh
+      - MYSQL_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=TCP -usaleh -ppassword"]
+      interval: 5s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - blog_app_db_data:/var/lib/mysql
+    networks:
+      - blog_net
+
+  blog_web_server:
+    container_name: blog_nginx
+    build:
+        context: .
+        dockerfile: Dockerfile.nginx
+    ports:
+        - "9999:80"
+    depends_on:
+        - app
+    volumes:
+        - app_code:/var/www/blog
+    networks:
+        - blog_net
+
+  redis:
+    image: redis:alpine
+    container_name: blog_redis
+    command: ["redis-server", "--requirepass", "password"]
+    restart: unless-stopped
+    networks:
+      - blog_net
+
+volumes:
+  blog_app_db_data:
+  app_code:
+
+networks:
+  blog_net:
+    driver: bridge

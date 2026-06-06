@@ -22,7 +22,7 @@ class ClearNotificationCommand extends Command
         })
             ->chunk(500, function ($users) {
                 $users->each(function ($user) {
-                    new ClearNotificationJob($user);
+                    dispatch(new ClearNotificationJob($user));
                 });
             });
     }

@@ -1,58 +1,193 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Blog System — Backend API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful backend for a blogging platform, built with **Laravel 13**. It exposes a
+versioned JSON API (`/api/v1`) for managing posts, comments, categories,
+interactions (like/dislike), follows, viewed-post history and notifications, with
+real-time events delivered over WebSockets.
 
-## About Laravel
+The API is token-authenticated and split into two areas — a **user** API and an
+**admin** API — each behind its own middleware. It is designed to be consumed by a
+web or mobile client.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Concern | Choice |
+| --- | --- |
+| Framework | Laravel 13 (PHP 8.3+) |
+| Auth | [Laravel Sanctum](https://laravel.com/docs/sanctum) (bearer tokens) |
+| Real-time | [Laravel Reverb](https://laravel.com/docs/reverb) (WebSocket broadcasting) |
+| Data objects | [spatie/laravel-data](https://spatie.be/docs/laravel-data) |
+| Media / uploads | [spatie/laravel-medialibrary](https://spatie.be/docs/laravel-medialibrary) |
+| Debugging | Telescope, Debugbar, Pail |
+| API docs | [Scribe](https://scribe.knuckles.wtf) |
+| Tests | Pest (parallel) |
+| Static analysis | PHPStan, Laravel Pint |
+| Datastores | MySQL, Redis |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Requirements
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP **8.3+** with `pdo_mysql`, `mbstring`, `bcmath`, `zip`, `exif`, `gd`, `redis`
+- Composer
+- Node.js + npm (for front-end assets)
+- MySQL and Redis
+- Docker + Docker Compose (optional, recommended)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Getting started
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Option A — Docker (recommended)
+
+The dev stack (`compose.yml`) runs the app (PHP-FPM), an Nginx web server, MySQL and
+Redis.
 
 ```bash
-composer require laravel/boost --dev
+# 1. Create your env file
+cp .env.example .env
 
-php artisan boost:install
+# 2. Build and start the stack
+docker compose up -d --build
+
+# 3. Generate an app key (first run only)
+docker exec blog_app php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+On startup the container entrypoint automatically links storage, runs migrations,
+seeds required database state, and caches the optimized config.
 
-## Contributing
+| Service | URL |
+| --- | --- |
+| API / web (Nginx) | http://localhost:9999 |
+| Reverb WebSocket | ws://localhost:9991 |
+| API docs (Scribe) | http://localhost:9999/docs |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> Update `DB_*`, `REDIS_*` and `REVERB_*` values in `.env` to match the compose
+> services (host `mysql` / `redis`).
 
-## Code of Conduct
+### Option B — Local PHP
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer setup        # install deps, copy .env, key:generate, migrate, build assets
+composer dev          # serve + queue worker + log tailing + vite, all at once
+```
 
-## Security Vulnerabilities
+`composer dev` runs the dev server, queue listener, `pail` log viewer and Vite
+concurrently. Reverb runs separately:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan reverb:start
+```
+
+---
+
+## API overview
+
+All endpoints are prefixed with **`/api/v1`** and return JSON. Authentication uses
+Sanctum bearer tokens:
+
+```
+Authorization: Bearer {token}
+```
+
+User tokens come from `POST /api/v1/login`; admin tokens from
+`POST /api/v1/admin/login`.
+
+### User API (`/api/v1`)
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/login`, `/register`, `/logout` | Authentication |
+| GET / PUT | `/profile/{user}`, `/profile`, `/profile/password` | View / update profile & password |
+| GET | `/posts/viewed` | Viewed-post history |
+| GET | `/users/{user}/posts` | Posts by a given user |
+| resource | `/posts` | CRUD posts (policy-guarded) |
+| resource | `/posts/{post}/comments` | CRUD comments on a post (shallow) |
+| resource | `/posts/{post}/interactions` | Like / dislike a post |
+| resource | `/comments/{comment}/interactions` | Like / dislike a comment |
+| GET / PUT | `/follow/following`, `/follow/followers`, `/follow/following/{follow,unfollow}/{user}` | Follow graph |
+| GET | `/categories` | List categories |
+| GET / PUT | `/users/notifications`, `/users/notifications/{notification}` | Notifications |
+
+### Admin API (`/api/v1/admin`)
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/login`, `/logout` | Admin authentication |
+| GET | `/dashboard` | Dashboard metrics |
+| resource | `/users` | List / view / delete users |
+| resource | `/categories` | Manage categories |
+| resource | `/posts` | Manage posts (no create) |
+| resource | `/comments` | Manage comments (no create) |
+
+> The full, always-up-to-date reference is generated by Scribe. Regenerate it with
+> `php artisan scribe:generate` and browse it at `/docs`.
+
+### Error responses
+
+JSON error bodies under `api/*` follow a small, consistent set of shapes (see
+`bootstrap/app.php`):
+
+| Status | Shape |
+| --- | --- |
+| 401 Unauthenticated | `{"message": "..."}` |
+| 403 Forbidden | `{"message": "..."}` |
+| 404 Not found | `{"message": "..."}` |
+| 422 Validation / business rule | `{"message": "...", "errors": { ... }}` |
+| 500 Server error | `{"message": "Server error"}` |
+
+---
+
+## Testing
+
+Tests run with [Pest](https://pestphp.com) and live in `tests/`.
+
+```bash
+# Local
+php artisan test
+php artisan test --parallel
+
+# In Docker
+docker exec blog_app php artisan test --parallel
+```
+
+CI builds the image from `docker-compose.ci.yml` (service `blog_app_testing`) against
+a throwaway MySQL.
+
+### Code quality
+
+```bash
+composer format            # Laravel Pint (code style)
+./vendor/bin/phpstan       # static analysis
+```
+
+---
+
+## Project structure
+
+```
+app/
+  Console/Commands/        Custom artisan commands (notifications cleanup, db seeding)
+  Http/V1/
+    Controllers/Api/       Admin/ and User/ controllers
+    Middleware/            AdminMiddleware, UserMiddleware
+    Resources/             API response resources
+  Models/                  User, Post, Comment, Category, Interaction
+bootstrap/app.php          Routing, middleware groups & API exception handling
+routes/
+  api/v1/admin.php         Admin route group (auth:sanctum + AdminMiddleware)
+  api/v1/user.php          User route group (auth:sanctum + UserMiddleware)
+  channels.php             Broadcast channel authorization
+scripts/entrypoint.sh      Container startup (migrate, seed, optimize, php-fpm)
+compose.yml                Local dev stack (app + nginx + mysql + redis)
+docker-compose.ci.yml      CI stack
+```
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
