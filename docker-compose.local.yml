@@ -1,10 +1,7 @@
 services:
   app:
     container_name: blog_application_staging
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: blog-app:staging
+    image: salehaldhaheri1010/blog-app:staging
     restart: unless-stopped
     env_file:
       - .env
@@ -14,14 +11,14 @@ services:
       redis:
         condition: service_started
     volumes:
-      - public:/var/www/public:rw
-      - storage:/var/www/storage:rw
+      - public:/var/www/blog/public:rw
+      - storage:/var/www/blog/storage:rw
     networks:
       - blog_net
 
   reverb:
     container_name: blog_websocket_staging
-    image: blog-app:staging
+    image: salehaldhaheri1010/blog-app:staging
     # Reverb needs ext-pcntl (SIGINT/SIGTERM signal handling) which the image
     command: sh -c "docker-php-ext-install pcntl && php artisan reverb:start --host=0.0.0.0 --port=8080"
     env_file:
@@ -48,8 +45,8 @@ services:
       - NGINX_HOST=${NGINX_HOST:-localhost}
     volumes:
       - ./nginx.conf:/etc/nginx/templates/default.conf.template
-      - public:/var/www/public:ro
-      - storage:/var/www/storage:ro
+      - public:/var/www/blog/public:ro
+      - storage:/var/www/blog/storage:ro
     depends_on:
       - app
     networks:

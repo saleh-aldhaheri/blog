@@ -1,8 +1,8 @@
 FROM php:8.5-fpm
 
-WORKDIR /var/www
+WORKDIR /var/www/blog
 
-COPY . /var/www/
+COPY . /var/www/blog
 
 RUN apt-get update && apt-get install -y \
     git \

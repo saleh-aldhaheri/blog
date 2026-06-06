@@ -5,7 +5,7 @@ services:
         dockerfile: Dockerfile
     container_name: blog_app
     volumes:
-        - app_code:/var/www
+        - app_code:/var/www/blog
     depends_on:
       mysql:
         condition: service_healthy
@@ -45,7 +45,7 @@ services:
     depends_on:
         - app
     volumes:
-        - app_code:/var/www
+        - app_code:/var/www/blog
     networks:
         - blog_net
 

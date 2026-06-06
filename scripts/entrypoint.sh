@@ -11,11 +11,11 @@ function main() {
 }
 
 function permissions() {
-    chown -R www-data:www-data /var/www/storage
-    chown -R www-data:www-data /var/www/public
-    chown -R www-data:www-data /var/www/bootstrap/cache
-    chmod -R 775 /var/www/storage
-    chmod -R 775 /var/www/bootstrap/cache
+    chown -R www-data:www-data /var/www/blog/storage
+    chown -R www-data:www-data /var/www/blog/public
+    chown -R www-data:www-data /var/www/blog/bootstrap/cache
+    chmod -R 775 /var/www/blog/storage
+    chmod -R 775 /var/www/blog/bootstrap/cache
 }
 
 function prepareStorage() {
