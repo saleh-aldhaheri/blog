@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         channels: __DIR__.'/../routes/channels.php',
-        health: '/up', 
+        health: '/up',
         then: function () {
             Route::prefix('api/v1')
                 ->as('api.')
