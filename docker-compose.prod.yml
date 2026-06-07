@@ -1,7 +1,7 @@
 services:
   app:
     container_name: blog_application_production
-    image: salehaldhaheri1010/blog-app:production
+    image: salehaldhaheri1010/blog-prod-app:production
     restart: unless-stopped
     env_file:
       - .env
@@ -13,7 +13,7 @@ services:
 
   reverb:
     container_name: blog_websocket_production
-    image: salehaldhaheri1010/blog-app:production
+    image: salehaldhaheri1010/blog-prod-app:production
     # Reverb needs ext-pcntl (SIGINT/SIGTERM signal handling) which the image
     command: sh -c "docker-php-ext-install pcntl && php artisan reverb:start --host=0.0.0.0 --port=8080"
     env_file:
