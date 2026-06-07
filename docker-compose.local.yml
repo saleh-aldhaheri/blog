@@ -38,7 +38,8 @@ services:
     image: nginx:alpine
     restart: unless-stopped
     ports:
-      - "8001:80"
+      - "80:80"
+      - "443:443"
     env_file:
       - .env
     environment:
@@ -47,8 +48,19 @@ services:
       - ./nginx.conf:/etc/nginx/templates/default.conf.template
       - public:/var/www/blog/public:ro
       - storage:/var/www/blog/storage:ro
+      - ./certbot/conf:/etc/letsencrypt          # ← certs folder (shared)
+      - ./certbot/www:/var/www/certbot
     depends_on:
-      - app
+      app:
+        condition: service_started
+    networks:
+      - blog_net
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt          # ← same certs folder
+      - ./certbot/www:/var/www/certbot
     networks:
       - blog_net
 
