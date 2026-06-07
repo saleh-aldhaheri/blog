@@ -59,6 +59,14 @@ services:
     networks:
       - blog_net
 
+  redis:
+    container_name: blog_cache_production
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - blog_net
+
 networks:
   blog_net:
 
