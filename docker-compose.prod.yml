@@ -1,0 +1,75 @@
+services:
+  app:
+    container_name: blog_application_production
+    image: salehaldhaheri1010/blog-app:production
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - public:/var/www/blog/public:rw
+      - storage:/var/www/blog/storage:rw
+    networks:
+      - blog_net
+
+  reverb:
+    container_name: blog_websocket_production
+    image: salehaldhaheri1010/blog-app:production
+    # Reverb needs ext-pcntl (SIGINT/SIGTERM signal handling) which the image
+    command: sh -c "docker-php-ext-install pcntl && php artisan reverb:start --host=0.0.0.0 --port=8080"
+    env_file:
+      - .env
+    depends_on:
+      app:
+        condition: service_started
+      redis:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      - blog_net
+
+  nginx:
+    container_name: blog_nginx_production
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - .env
+    environment:
+      - NGINX_HOST=${NGINX_HOST:-localhost}
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template
+      - public:/var/www/blog/public:ro
+      - storage:/var/www/blog/storage:ro
+      - ./certbot/conf:/etc/letsencrypt          # ← certs folder (shared)
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      app:
+        condition: service_started
+    networks:
+      - blog_net
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt          # ← same certs folder
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - blog_net
+
+  redis:
+    container_name: blog_cache_production
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - blog_net
+
+networks:
+  blog_net:
+
+volumes:
+  storage:
+  public:
