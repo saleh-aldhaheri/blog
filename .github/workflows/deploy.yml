@@ -29,11 +29,11 @@ jobs:
       - name: build and push image
         run: |
           docker build \
-            -t ${{ secrets.PROD_DOCKER_USERNAME }}/blog-app:production \
-            -t ${{ secrets.PROD_DOCKER_USERNAME }}/blog-app:${{ steps.sha.outputs.short }} \
+            -t ${{ secrets.PROD_DOCKER_USERNAME }}/blog-prod-app:production \
+            -t ${{ secrets.PROD_DOCKER_USERNAME }}/blog-prod-app:${{ steps.sha.outputs.short }} \
             .
-          docker push ${{ secrets.PROD_DOCKER_USERNAME }}/blog-app:production
-          docker push ${{ secrets.PROD_DOCKER_USERNAME }}/blog-app:${{ steps.sha.outputs.short }}
+          docker push ${{ secrets.PROD_DOCKER_USERNAME }}/blog-prod-app:production
+          docker push ${{ secrets.PROD_DOCKER_USERNAME }}/blog-prod-app:${{ steps.sha.outputs.short }}
 
   deploy:
     runs-on: ubuntu-latest
