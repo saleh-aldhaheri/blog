@@ -30,3 +30,5 @@ frankenphp-worker.php
 
 **/scribe
 .scribe
+
+*.pem

@@ -8,6 +8,7 @@ services:
     volumes:
       - public:/var/www/blog/public:rw
       - storage:/var/www/blog/storage:rw
+      - ./cert:/var/www/blog/cert
     networks:
       - blog_net
 
